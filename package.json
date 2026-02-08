@@ -1,0 +1,12 @@
+{
+  "name": "cacaushow-pascoa",
+  "version": "1.0.0",
+  "description": "Projeto estático Cacau Show - Páscoa",
+  "scripts": {
+    "start": "http-server . -p 8080 -o",
+    "dev": "http-server . -p 8080 -o"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

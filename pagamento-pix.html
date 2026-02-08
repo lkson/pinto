@@ -1,0 +1,642 @@
+<!DOCTYPE html><html lang="pt"><head>
+<meta charset="UTF-8">
+
+<link rel="preload" href="https://www.googletagmanager.com/gtm.js?id=GTM-PQSFKTS" as="script">
+<link rel="preload" href="https://www.googletagmanager.com/gtag/js?id=G-TTZNN90HGX&l=dataLayer&cx=c" as="script">
+
+<!--[if gt IE 9]><!-->
+<script defer="" type="text/javascript" src="js/main.js"></script>
+<!--<![endif]-->
+
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Pagamento PIX | Loja Cacau Show</title>
+
+<meta name="description" content="Pagamento PIX - Loja Cacau Show">
+<meta name="keywords" content="PIX, Pagamento, Cacau Show">
+
+<meta property="og:title" content="Pagamento PIX | Loja Cacau Show">
+<meta property="og:description" content="Pagamento PIX - Loja Cacau Show">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cacau Show">
+<meta property="og:locale" content="pt_BR">
+
+<link rel="icon" href="images/favicon.ico" sizes="32x32">
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PQSFKTS');</script>
+<!-- End Google Tag Manager -->
+
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/detail.css">
+<link rel="stylesheet" href="css/backgroundColorLayout.css">
+<link rel="stylesheet" href="css/component.css">
+<link rel="stylesheet" href="css/productTile.css">
+<link rel="stylesheet" href="css/einsteinCarousel.css">
+<link rel="stylesheet" href="css/campaignBanner.css">
+<link rel="stylesheet" href="css/smartOrderRefill.css">
+
+<style>
+.pix-container {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.pix-container h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #00A859;
+}
+
+.pix-qr-code {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #e8e8e8;
+    display: inline-block;
+    margin: 20px 0;
+}
+
+.pix-code-container {
+    background: #f8f8f8;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #e0e0e0;
+}
+
+.pix-code {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #333;
+    word-break: break-all;
+    line-height: 1.6;
+    margin: 10px 0;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.btn-copy-pix {
+    width: 100%;
+    background: #0066CC;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-copy-pix:hover {
+    background: #0052a3;
+}
+
+.btn-copy-pix.copied {
+    background: #00A859;
+}
+
+.pix-instructions {
+    text-align: left;
+    margin-top: 30px;
+    padding: 20px;
+    background: #f0f7ff;
+    border-radius: 8px;
+    border-left: 4px solid #0066CC;
+}
+
+.pix-instructions h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.pix-instructions ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.pix-instructions li {
+    margin-bottom: 10px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.pix-status {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-weight: 500;
+}
+
+.pix-status.pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+}
+
+.pix-status.completed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+}
+
+.pix-amount {
+    font-size: 32px;
+    font-weight: bold;
+    color: #00A859;
+    margin: 20px 0;
+}
+
+.pix-timer {
+    font-size: 18px;
+    font-weight: 600;
+    color: #dc3545;
+    margin: 15px 0;
+}
+
+/* Ajustar posicionamento da imagem "feliz hoje" para não cobrir os ícones sociais */
+.footer__image {
+    margin-top: 5px !important;
+}
+
+.footer__image img {
+    position: relative;
+    top: 3px;
+}
+</style>
+
+<link rel="stylesheet" href="css/skin.css">
+
+</head><body>
+
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQSFKTS" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+
+<div class="page" data-action="null" data-querystring="null">
+<header class="it__header">
+    <a href="#maincontent" class="skip" aria-label="Ir para conteúdo principal">Ir para conteúdo principal</a>
+    <a href="#footercontent" class="skip" aria-label="Ir para conteúdo do rodapé">Ir para conteúdo do rodapé</a>
+    <div class="header-banner slide-up d-none">
+        <div class="container">
+            <div class="d-flex justify-content-between">
+                <div class="content"></div>
+                <div class="close-button">
+                    <button type="button" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header container">
+        <div class="it__header--bgContainer">
+            <div class="it__header--bg container-wrapper">
+                <div class="col p-0">
+                    <div class="navbar-header brand">
+                        <div class="d-flex flex-row justify-content-between align-items-center">
+                            <a class="logo-home" href="index.html" title="Cacau Show Home">
+                                <img class="it_header--logo" src="images/logo_cacau_show.svg" alt="Cacau Show">
+                            </a>
+                            <div class="d-xl-none d-flex align-items-center">
+                                <div class="minicart" data-action-url="/on/demandware.store/Sites-CacauShow-Site/pt_BR/Cart-MiniCartShow">
+                                    <div class="minicart-total">
+                                        <a class="minicart-link" href="carrinho.html" title="carrinho 0 Itens" aria-label="carrinho 0 Itens" aria-haspopup="true">
+                                            <i class="minicart-icon fa fa-shopping-bag"></i>
+                                            <span class="minicart-quantity">0</span>
+                                        </a>
+                                    </div>
+                                    <div class="popover popover-bottom"></div>
+                                </div>
+                                <button class="navbar-toggler" type="button" aria-controls="sg-navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                                    <span class="icon-menu"></span>
+                                </button>
+                                <button class="close-button" type="button" role="button" aria-label="Fechar menu">
+                                    Fechar menu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-5">
+                    <div class="it__search">
+                        <div class="site-search">
+                            <form role="search" action="/busca" method="get" name="simpleSearch">
+                                <input class="form-control search-field" type="text" name="q" value="" placeholder="Buscar Produto" role="combobox" aria-describedby="search-assistive-text" aria-haspopup="listbox" aria-owns="search-results" aria-expanded="false" aria-autocomplete="list" aria-activedescendant="" aria-controls="search-results" aria-label="Insira palavra chave ou nº do item" autocomplete="off">
+                                <button type="reset" name="reset-button" class="reset-button d-none" aria-label="">
+                                    <img src="images/icon-x-lg.svg" alt="">
+                                </button>
+                                <div class="suggestions-wrapper" data-url="/on/demandware.store/Sites-CacauShow-Site/pt_BR/SearchServices-GetSuggestions?q="></div>
+                                <input type="hidden" value="null" name="lang">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-5 it__login">
+                    <div class="it__login--options">
+                        <div class="user">
+                            <a class="btn btn-chamoisee" href="/minha-conta" role="button" aria-label="Entrar na minha conta">
+                                <i class="fa fa-sign-in" aria-hidden="true"></i>
+                                <span class="user-message">Entrar</span>
+                            </a>
+                        </div>
+                        <div class="it__changeCep">
+                            <button class="js-header-postal-code" data-toggle="modal" data-target="#modal-cep">
+                                <span class="it__changeCep__address">Cacau Show - SP</span>
+                                <span class="it__changeCep__btnChange">Alterar</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="it__minicart d-none d-xl-block">
+                        <div class="minicart" data-action-url="/on/demandware.store/Sites-CacauShow-Site/pt_BR/Cart-MiniCartShow">
+                            <div class="minicart-total">
+                                <a class="minicart-link" href="carrinho.html" title="carrinho 0 Itens" aria-label="carrinho 0 Itens" aria-haspopup="true">
+                                    <i class="minicart-icon fa fa-shopping-bag"></i>
+                                    <span class="minicart-quantity">0</span>
+                                </a>
+                            </div>
+                            <div class="popover popover-bottom"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div role="main" class="null" id="maincontent">
+    <div class="storepage" id="pagamento-pix">
+        <div class="container" style="padding: 40px 15px;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="it_product-detail__name" style="margin-bottom: 40px; padding-top: 20px;">
+                        <h1 style="font-size: 28px; font-weight: 600; color: #333; margin: 0;">Pagamento via PIX</h1>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-8 col-12 mx-auto">
+                            <div class="pix-container">
+                                <h2>Escaneie o QR Code ou copie o código PIX</h2>
+                                
+                                <div id="pix-loading" style="padding: 40px; text-align: center;">
+                                    <i class="fa fa-spinner fa-spin" style="font-size: 48px; color: #00A859;"></i>
+                                    <p style="margin-top: 20px; color: #666;">Carregando código PIX...</p>
+                                </div>
+                                
+                                <div id="pix-content" style="display: none;">
+                                    <div class="pix-amount" id="pix-amount">R$ 0,00</div>
+                                    
+                                    <div class="pix-status pending" id="pix-status">
+                                        <i class="fa fa-clock-o"></i> Aguardando pagamento
+                                    </div>
+                                    
+                                    <div class="pix-timer" id="pix-timer"></div>
+                                    
+                                    <div class="pix-qr-code" id="pix-qr-code">
+                                        <!-- QR Code será gerado aqui -->
+                                    </div>
+                                    
+                                    <div class="pix-code-container">
+                                        <p style="font-weight: 600; margin-bottom: 10px; color: #333;">Código PIX (Copiar e Colar):</p>
+                                        <div class="pix-code" id="pix-code-text"></div>
+                                        <button class="btn-copy-pix" id="btn-copy-pix" onclick="copiarPixCode()">
+                                            <i class="fa fa-copy"></i>
+                                            <span id="copy-text">Copiar Código PIX</span>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="pix-instructions">
+                                        <h3>Como pagar com PIX:</h3>
+                                        <ol>
+                                            <li>Abra o aplicativo do seu banco</li>
+                                            <li>Escaneie o QR Code acima ou cole o código PIX</li>
+                                            <li>Confirme o pagamento no valor exibido</li>
+                                            <li>O pagamento será confirmado automaticamente</li>
+                                        </ol>
+                                    </div>
+                                    
+                                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                                        <a href="index.html" class="btn-checkout" style="background: #0066CC; text-decoration: none; display: inline-flex;">
+                                            <i class="fa fa-arrow-left"></i>
+                                            Continuar Comprando
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.warn('QRCode library failed to load')"></script>
+<script>
+// Função para atualizar badge do carrinho
+function updateCartBadge() {
+    var cart = JSON.parse(localStorage.getItem('cacaushow_cart') || '[]');
+    var total = cart.reduce(function(sum, item) { return sum + item.quantity; }, 0);
+    var badges = document.querySelectorAll('.minicart-quantity');
+    badges.forEach(function(badge) {
+        badge.textContent = total;
+    });
+}
+
+// Função para formatar valor
+function formatPrice(price) {
+    return 'R$ ' + price.toFixed(2).replace('.', ',');
+}
+
+// Função para copiar código PIX
+function copiarPixCode() {
+    var pixCode = document.getElementById('pix-code-text').textContent;
+    var btnCopy = document.getElementById('btn-copy-pix');
+    var copyText = document.getElementById('copy-text');
+    
+    navigator.clipboard.writeText(pixCode).then(function() {
+        btnCopy.classList.add('copied');
+        copyText.textContent = 'Código Copiado!';
+        setTimeout(function() {
+            btnCopy.classList.remove('copied');
+            copyText.textContent = 'Copiar Código PIX';
+        }, 2000);
+    }).catch(function(err) {
+        // Fallback para navegadores antigos
+        var textArea = document.createElement('textarea');
+        textArea.value = pixCode;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            btnCopy.classList.add('copied');
+            copyText.textContent = 'Código Copiado!';
+            setTimeout(function() {
+                btnCopy.classList.remove('copied');
+                copyText.textContent = 'Copiar Código PIX';
+            }, 2000);
+        } catch (err) {
+            alert('Erro ao copiar código. Por favor, copie manualmente.');
+        }
+        document.body.removeChild(textArea);
+    });
+}
+
+// Configuração do Supabase
+var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
+
+// Função para chamar API através do Supabase (proxy CORS)
+function chamarAPIViaSupabase(endpoint, method, data) {
+    var url = SUPABASE_URL + '/functions/v1/pix-proxy';
+    
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'apikey': SUPABASE_KEY
+        },
+        body: JSON.stringify({
+            endpoint: endpoint,
+            method: method,
+            data: data
+        })
+    });
+}
+
+// Função para verificar status do PIX
+function verificarStatusPIX() {
+    var transactionId = localStorage.getItem('transactionId');
+    if (!transactionId) return;
+    
+    var apiKey = 'GcUMYUZW7Z4Mhd1SFxv_aV-URlF6u2iUg5L3xcC2j0ZSDfKvwBu5lQ8yBrrB32ccWwpeL83wlDEwZyoxOi1JCA';
+    var apiUrl = 'https://app.duttyfy.com.br/api-pix/' + apiKey + '?transactionId=' + transactionId;
+    
+    // Chamar API através do Supabase
+    chamarAPIViaSupabase(apiUrl, 'GET', null)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    console.error('Erro ao verificar status:', err.error || 'Erro na requisição');
+                    return null;
+                });
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (!result) return;
+            
+            // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
+            var data = result.data || result;
+            
+            if (data.error) {
+                console.error('Erro ao verificar status:', data.error);
+                return;
+            }
+            
+            var statusDiv = document.getElementById('pix-status');
+            if (data.status === 'COMPLETED') {
+                statusDiv.className = 'pix-status completed';
+                statusDiv.innerHTML = '<i class="fa fa-check-circle"></i> Pagamento confirmado!';
+                clearInterval(window.pixStatusInterval);
+                document.getElementById('pix-timer').style.display = 'none';
+                
+                // Limpar carrinho após pagamento confirmado
+                setTimeout(function() {
+                    localStorage.removeItem('cacaushow_cart');
+                    updateCartBadge();
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao verificar status do PIX:', error);
+        });
+}
+
+// Função para iniciar timer
+function iniciarTimer() {
+    var minutos = 30;
+    var segundos = 0;
+    var timerDiv = document.getElementById('pix-timer');
+    
+    function atualizarTimer() {
+        var minutosStr = minutos < 10 ? '0' + minutos : minutos;
+        var segundosStr = segundos < 10 ? '0' + segundos : segundos;
+        timerDiv.textContent = 'Tempo restante: ' + minutosStr + ':' + segundosStr;
+        
+        if (minutos === 0 && segundos === 0) {
+            clearInterval(window.timerInterval);
+            timerDiv.textContent = 'Tempo expirado. Por favor, gere um novo código PIX.';
+            timerDiv.style.color = '#dc3545';
+        } else {
+            if (segundos === 0) {
+                minutos--;
+                segundos = 59;
+            } else {
+                segundos--;
+            }
+        }
+    }
+    
+    atualizarTimer();
+    window.timerInterval = setInterval(atualizarTimer, 1000);
+}
+
+// Carregar código PIX ao carregar a página
+window.addEventListener('DOMContentLoaded', function() {
+    updateCartBadge();
+    
+    var pixCode = localStorage.getItem('pixCode');
+    var transactionId = localStorage.getItem('transactionId');
+    var checkoutData = JSON.parse(localStorage.getItem('checkoutData') || '{}');
+    var cart = JSON.parse(localStorage.getItem('cacaushow_cart') || '[]');
+    
+    if (!pixCode || !transactionId) {
+        document.getElementById('pix-loading').innerHTML = '<p style="color: #dc3545; font-size: 18px;">Erro: Código PIX não encontrado. Por favor, finalize a compra novamente.</p><a href="checkout.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #00A859; color: white; text-decoration: none; border-radius: 4px;">Voltar ao Checkout</a>';
+        return;
+    }
+    
+    // Calcular total
+    var total = 0;
+    cart.forEach(function(item) {
+        total += item.price * item.quantity;
+    });
+    
+    // Exibir código PIX
+    document.getElementById('pix-code-text').textContent = pixCode;
+    document.getElementById('pix-amount').textContent = formatPrice(total);
+    
+    // Gerar QR Code
+    var qrContainer = document.getElementById('pix-qr-code');
+    qrContainer.innerHTML = ''; // Limpar container
+    
+    if (typeof QRCode !== 'undefined') {
+        QRCode.toCanvas(qrContainer, pixCode, {
+            width: 256,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, function(error) {
+            if (error) {
+                console.error('Erro ao gerar QR Code:', error);
+                qrContainer.innerHTML = '<p style="color: #dc3545; padding: 20px;">Erro ao gerar QR Code. Use o código PIX abaixo para pagar.</p>';
+            }
+        });
+    } else {
+        // Fallback se a biblioteca não carregar
+        qrContainer.innerHTML = '<div style="padding: 40px; background: #f8f8f8; border-radius: 8px;"><p style="color: #666; margin-bottom: 15px;">Escaneie o código PIX abaixo com o aplicativo do seu banco:</p><p style="font-size: 12px; color: #999;">Use o código PIX copiável abaixo</p></div>';
+    }
+    
+    // Mostrar conteúdo
+    document.getElementById('pix-loading').style.display = 'none';
+    document.getElementById('pix-content').style.display = 'block';
+    
+    // Iniciar timer
+    iniciarTimer();
+    
+    // Verificar status do PIX a cada 5 segundos
+    window.pixStatusInterval = setInterval(verificarStatusPIX, 5000);
+    
+    // Verificar status imediatamente
+    verificarStatusPIX();
+});
+</script>
+
+<footer class="footer" id="footercontent">
+    <div class="footer__container">
+        <div class="footer__header">
+            <div class="footer__logo">
+                <span class="icon-big_logo"></span>
+            </div>
+        </div>
+        <div class="row footer__main mx-0">
+            <div class="footer__internalLinks">
+                <div class="content-asset">
+                    <ul>
+                        <li><a href="https://www.cacaushow.com.br/para-sua-empresa/institucional.html"><span class="icon icon-mini_logo"></span> <span class="footer__text"> Sobre a <b>Cacau Show</b> </span> </a></li>
+                        <li><a href="https://www.cacaushow.com.br/fazenda/fazenda.html"><span class="icon"> <img alt="" src="images/footer_tree.svg" title=""> </span> <span class="footer__text"> Nossa <b>Fazenda</b> </span> </a></li>
+                        <li><a href="https://www.institutocacaushow.org.br/" target="_blank"><span class="icon"> <img alt="Grupo Cacau Show" src="images/icon-cacau-group.svg" title=""> </span> <span class="footer__text"> <b>Instituto</b> Cacau Show </span> </a></li>
+                        <li><a href="https://www.eureciclo.com.br/" target="_blank"><span class="icon"> <img alt="eu reciclo" src="images/icon-eureciclo.svg" style="width: 100px" title=""> </span></a></li>
+                        <li><a href="https://www.privacidade.com.br/portal-de-privacidade?token=e8d91724233537d3a44c65424e6b9ee7" target="_blank"><img src="images/selo_portal_de_privacidade.png" style="width: 120px"></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__privacyTerms">
+                <div class="content-asset">
+                    <p>Preços apresentados na loja virtual podem variar de acordo com a região. Informações sobre preços, prazos de validade, estoque e origem podem ser obtidas diretamente nas lojas. Consulte a loja para verificar disponibilidade.</p>
+                    <p>Preços, estoques, informações e condições disponíveis no site estão sujeitos a alterações sem aviso prévio.</p>
+                </div>
+            </div>
+            <div class="footer__policyLinks">
+                <div class="content-asset">
+                    <h3>Institucional</h3>
+                    <p><a href="https://revendedor.cacaushow.com.br/revendedor/" target="_blank">Seja um Revendedor</a></p>
+                    <p><a href="https://www.cacaushow.com.br/franquia.html">Seja um Franqueado</a></p>
+                    <p><a href="https://www.cacaushow.com.br/para-sua-empresa/para-sua-empresa.html">Área para Empresas</a></p>
+                    <p><a href="https://cacaushow.gupy.io/" target="_blank">Trabalhe Conosco</a></p>
+                </div>
+            </div>
+            <div class="footer__policyLinks">
+                <div class="content-asset">
+                    <h3>Políticas</h3>
+                    <p><a href="https://www.cacaushow.com.br/terms.html">Termos de Uso</a></p>
+                    <p><a href="https://www.privacidade.com.br/portal-de-privacidade?token=e8d91724233537d3a44c65424e6b9ee7" target="_blank">Política de Privacidade</a></p>
+                    <p><a href="https://www.cacaushow.com.br/politica/returns.html">Política de Trocas</a></p>
+                    <p><a href="https://www.cacaushow.com.br/faqs.html">FAQ</a></p>
+                </div>
+            </div>
+            <div class="col footer__wrapper">
+                <div class="footer__socialLinks">
+                    <div class="content-asset">
+                        <ul>
+                            <li><span class="social-text">Siga-nos</span></li>
+                            <li><a href="https://www.facebook.com/CacauShow" target="_blank" title="Facebook"><span class="icon-social_fb"></span> </a></li>
+                            <li><a href="https://www.instagram.com/cacaushow/" target="_blank" title="Instagram"><span class="icon-social_insta"></span> </a></li>
+                            <li><a href="https://www.youtube.com/user/CacauShowBR" target="_blank" title="Youtube"><span class="icon-social_yb"></span> </a></li>
+                            <li><a href="https://www.tiktok.com/@cacaushow" target="_blank" title="TikTok"><span class="icon-tiktok"></span> </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="d-none d-sm-block footer__image">
+                    <img src="images/bg_footer-feliz.png" alt="Cacau Show">
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</div>
+
+<script type="text/javascript" src="js/dwanalytics-22.2.js" async="async"></script>
+<script src="js/dwac-21.7.js" type="text/javascript" async="async"></script>
+<script src="js/gretel.min.js" type="text/javascript" async="async"></script>
+
+</body></html>
