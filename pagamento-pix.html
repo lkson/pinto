@@ -565,8 +565,25 @@ function iniciarTimer() {
 }
 
 // Carregar código PIX ao carregar a página
+// Função para carregar localização salva e atualizar header
+function carregarLocalizacaoSalva() {
+    var enderecoSalvo = localStorage.getItem('cacaushow_endereco');
+    if (enderecoSalvo) {
+        try {
+            var endereco = JSON.parse(enderecoSalvo);
+            var addressSpan = document.querySelector('.it__changeCep__address');
+            if (addressSpan && endereco.estado) {
+                addressSpan.textContent = 'Cacau Show - ' + endereco.estado;
+            }
+        } catch (e) {
+            console.error('Erro ao carregar localização salva:', e);
+        }
+    }
+}
+
 window.addEventListener('DOMContentLoaded', function() {
     updateCartBadge();
+    carregarLocalizacaoSalva();
     
     var pixCode = localStorage.getItem('pixCode');
     var transactionId = localStorage.getItem('transactionId');

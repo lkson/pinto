@@ -2301,11 +2301,31 @@ function addProductToCartFromPDP(btn) {
     }
 }
 
+// Função para carregar localização salva e atualizar header
+function carregarLocalizacaoSalva() {
+    var enderecoSalvo = localStorage.getItem('cacaushow_endereco');
+    if (enderecoSalvo) {
+        try {
+            var endereco = JSON.parse(enderecoSalvo);
+            var addressSpan = document.querySelector('.it__changeCep__address');
+            if (addressSpan && endereco.estado) {
+                addressSpan.textContent = 'Cacau Show - ' + endereco.estado;
+            }
+        } catch (e) {
+            console.error('Erro ao carregar localização salva:', e);
+        }
+    }
+}
+
 // Atualiza badge do carrinho ao carregar a página
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateCartBadge);
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartBadge();
+        carregarLocalizacaoSalva();
+    });
 } else {
     updateCartBadge();
+    carregarLocalizacaoSalva();
 }
 </script>
 
@@ -2342,11 +2362,31 @@ if (document.readyState === 'loading') {
     return false;
 }
 
+// Função para carregar localização salva e atualizar header
+function carregarLocalizacaoSalva() {
+    var enderecoSalvo = localStorage.getItem('cacaushow_endereco');
+    if (enderecoSalvo) {
+        try {
+            var endereco = JSON.parse(enderecoSalvo);
+            var addressSpan = document.querySelector('.it__changeCep__address');
+            if (addressSpan && endereco.estado) {
+                addressSpan.textContent = 'Cacau Show - ' + endereco.estado;
+            }
+        } catch (e) {
+            console.error('Erro ao carregar localização salva:', e);
+        }
+    }
+}
+
 // Atualiza badge do carrinho ao carregar a página
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateCartBadge);
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartBadge();
+        carregarLocalizacaoSalva();
+    });
 } else {
     updateCartBadge();
+    carregarLocalizacaoSalva();
 }
 </script>
 

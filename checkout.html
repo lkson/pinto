@@ -563,6 +563,49 @@ document.getElementById('cpf').addEventListener('input', function(e) {
     e.target.value = formatCPF(e.target.value);
 });
 
+// Função para carregar localização salva
+function carregarLocalizacaoSalva() {
+    var enderecoSalvo = localStorage.getItem('cacaushow_endereco');
+    if (enderecoSalvo) {
+        try {
+            var endereco = JSON.parse(enderecoSalvo);
+            
+            // Atualizar header
+            var addressSpan = document.querySelector('.it__changeCep__address');
+            if (addressSpan && endereco.estado) {
+                addressSpan.textContent = 'Cacau Show - ' + endereco.estado;
+            }
+            
+            // Preencher campos do checkout se existirem
+            if (document.getElementById('cep') && endereco.cep) {
+                var cepFormatado = endereco.cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+                document.getElementById('cep').value = cepFormatado;
+            }
+            
+            if (document.getElementById('cidade') && endereco.cidade) {
+                document.getElementById('cidade').value = endereco.cidade;
+            }
+            
+            if (document.getElementById('estado') && endereco.estado) {
+                document.getElementById('estado').value = endereco.estado;
+            }
+            
+            if (document.getElementById('numero') && endereco.numero) {
+                document.getElementById('numero').value = endereco.numero;
+            }
+            
+            // Se tiver CEP, buscar automaticamente para preencher outros campos
+            if (endereco.cep && document.getElementById('cep')) {
+                setTimeout(function() {
+                    buscarCEP();
+                }, 500);
+            }
+        } catch (e) {
+            console.error('Erro ao carregar localização salva:', e);
+        }
+    }
+}
+
 // Função para buscar CEP usando ViaCEP API
 function buscarCEP() {
     var cep = document.getElementById('cep').value.replace(/\D/g, '');
@@ -614,6 +657,13 @@ document.getElementById('cep').addEventListener('keypress', function(e) {
         buscarCEP();
     }
 });
+
+// Carregar localização salva ao carregar a página
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', carregarLocalizacaoSalva);
+} else {
+    carregarLocalizacaoSalva();
+}
 
 // Carregar resumo do carrinho
 function loadCartSummary() {
