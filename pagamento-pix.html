@@ -354,7 +354,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.warn('QRCode library failed to load')"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 // Função para atualizar badge do carrinho
 function updateCartBadge() {
@@ -666,26 +666,60 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Gerar QR Code
     var qrContainer = document.getElementById('pix-qr-code');
-    qrContainer.innerHTML = ''; // Limpar container
+    qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;"><p style="color: #666;">Gerando QR Code...</p></div>';
     
-    if (typeof QRCode !== 'undefined') {
-        QRCode.toCanvas(qrContainer, pixCode, {
-            width: 256,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        }, function(error) {
-            if (error) {
-                console.error('Erro ao gerar QR Code:', error);
-                qrContainer.innerHTML = '<p style="color: #dc3545; padding: 20px;">Erro ao gerar QR Code. Use o código PIX abaixo para pagar.</p>';
-            }
-        });
-    } else {
-        // Fallback se a biblioteca não carregar
-        qrContainer.innerHTML = '<div style="padding: 40px; background: #f8f8f8; border-radius: 8px;"><p style="color: #666; margin-bottom: 15px;">Escaneie o código PIX abaixo com o aplicativo do seu banco:</p><p style="font-size: 12px; color: #999;">Use o código PIX copiável abaixo</p></div>';
+    // Função para gerar QR Code
+    function gerarQRCode() {
+        qrContainer.innerHTML = ''; // Limpar container
+        
+        if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+            // Criar elemento canvas para o QR Code
+            var canvas = document.createElement('canvas');
+            qrContainer.appendChild(canvas);
+            
+            // Usar QRCode.toCanvas com o elemento canvas criado
+            QRCode.toCanvas(canvas, pixCode, {
+                width: 256,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                },
+                errorCorrectionLevel: 'M'
+            }, function(error) {
+                if (error) {
+                    console.error('Erro ao gerar QR Code:', error);
+                    qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;"><p style="color: #dc3545; margin-bottom: 10px;">Erro ao gerar QR Code.</p><p style="color: #666; font-size: 14px;">Use o código PIX abaixo para pagar.</p></div>';
+                } else {
+                    console.log('QR Code gerado com sucesso');
+                    // Adicionar estilo ao canvas
+                    canvas.style.display = 'block';
+                    canvas.style.margin = '0 auto';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.height = 'auto';
+                }
+            });
+        } else {
+            // Fallback se a biblioteca não carregar - tentar novamente
+            console.warn('Biblioteca QRCode não disponível, aguardando...');
+            var tentativas = 0;
+            var maxTentativas = 10;
+            
+            var verificarBiblioteca = setInterval(function() {
+                tentativas++;
+                if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+                    clearInterval(verificarBiblioteca);
+                    gerarQRCode();
+                } else if (tentativas >= maxTentativas) {
+                    clearInterval(verificarBiblioteca);
+                    qrContainer.innerHTML = '<div style="padding: 40px; background: #f8f8f8; border-radius: 8px; text-align: center;"><p style="color: #666; margin-bottom: 15px;">Escaneie o código PIX abaixo com o aplicativo do seu banco:</p><p style="font-size: 12px; color: #999;">Use o código PIX copiável abaixo</p></div>';
+                }
+            }, 200);
+        }
     }
+    
+    // Aguardar um pouco para garantir que a biblioteca está carregada
+    setTimeout(gerarQRCode, 300);
     
     // Mostrar conteúdo
     document.getElementById('pix-loading').style.display = 'none';
