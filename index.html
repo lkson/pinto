@@ -1781,23 +1781,47 @@ Alterar
     }
     
     // Função para salvar localização e atualizar header
-    function confirmarEndereco() {
-        var cep = document.getElementById('customer-postal-code').value.replace(/\D/g, '');
-        var numero = document.getElementById('customer-street-number').value.trim();
+    function confirmarEndereco(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        var cepInput = document.getElementById('customer-postal-code');
+        var numeroInput = document.getElementById('customer-street-number');
+        
+        if (!cepInput || !numeroInput) {
+            console.error('Campos não encontrados');
+            return false;
+        }
+        
+        var cep = cepInput.value.replace(/\D/g, '');
+        var numero = numeroInput.value.trim();
         
         if (cep.length !== 8) {
-            alert('Por favor, digite um CEP válido.');
-            return;
+            alert('Por favor, digite um CEP válido com 8 dígitos.');
+            return false;
         }
         
         if (!numero) {
             alert('Por favor, preencha o número da residência.');
-            return;
+            numeroInput.focus();
+            return false;
         }
         
+        // Se não tiver geolocalização, buscar automaticamente
         if (!geolocalizacaoAtual || !geolocalizacaoAtual.cidade || !geolocalizacaoAtual.estado) {
-            alert('Por favor, busque o CEP primeiro para obter a localização.');
-            return;
+            // Buscar CEP primeiro
+            buscarCEPModal();
+            // Aguardar um pouco e tentar novamente
+            setTimeout(function() {
+                if (geolocalizacaoAtual && geolocalizacaoAtual.cidade && geolocalizacaoAtual.estado) {
+                    confirmarEndereco();
+                } else {
+                    alert('Por favor, aguarde a busca do CEP ser concluída.');
+                }
+            }, 1000);
+            return false;
         }
         
         // Salvar no localStorage
@@ -1818,10 +1842,18 @@ Alterar
         // Fechar modal
         var modal = document.getElementById('modal-cep');
         if (modal) {
-            var bootstrapModal = bootstrap.Modal.getInstance(modal);
-            if (bootstrapModal) {
-                bootstrapModal.hide();
+            // Tentar usar Bootstrap primeiro
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                var bootstrapModal = bootstrap.Modal.getInstance(modal);
+                if (bootstrapModal) {
+                    bootstrapModal.hide();
+                } else {
+                    // Criar nova instância se não existir
+                    var newModal = new bootstrap.Modal(modal);
+                    newModal.hide();
+                }
             } else {
+                // Fallback sem Bootstrap
                 modal.style.display = 'none';
                 modal.classList.remove('show');
                 document.body.classList.remove('modal-open');
@@ -1829,6 +1861,8 @@ Alterar
                 if (backdrop) backdrop.remove();
             }
         }
+        
+        return false;
     }
     
     // Carregar endereço salvo ao carregar a página
@@ -1847,37 +1881,83 @@ Alterar
         }
     }
     
-    // Event listeners para busca de CEP
-    if (document.getElementById('customer-postal-code')) {
+    // Função para inicializar eventos do modal de CEP
+    function inicializarModalCEP() {
         var cepInput = document.getElementById('customer-postal-code');
+        var btnConfirmar = document.getElementById('btn-confirmar-endereco');
         
-        // Buscar quando perder o foco e tiver 8 dígitos
-        cepInput.addEventListener('blur', function() {
-            var cep = this.value.replace(/\D/g, '');
-            if (cep.length === 8) {
-                buscarCEPModal();
-            }
-        });
+        if (cepInput) {
+            // Remover listeners antigos se existirem
+            var novoCepInput = cepInput.cloneNode(true);
+            cepInput.parentNode.replaceChild(novoCepInput, cepInput);
+            cepInput = novoCepInput;
+            
+            // Buscar quando perder o foco e tiver 8 dígitos
+            cepInput.addEventListener('blur', function() {
+                var cep = this.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                    buscarCEPModal();
+                }
+            });
+            
+            // Buscar ao pressionar Enter
+            cepInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarCEPModal();
+                }
+            });
+        }
         
-        // Buscar ao pressionar Enter
-        cepInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                buscarCEPModal();
-            }
-        });
+        if (btnConfirmar) {
+            // Remover listener antigo se existir
+            var novoBtn = btnConfirmar.cloneNode(true);
+            btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+            btnConfirmar = novoBtn;
+            
+            // Event listener para confirmar endereço - múltiplas formas para garantir
+            btnConfirmar.onclick = function(e) {
+                return confirmarEndereco(e);
+            };
+            
+            btnConfirmar.addEventListener('click', function(e) {
+                return confirmarEndereco(e);
+            });
+        }
     }
     
-    // Event listener para confirmar endereço
-    if (document.getElementById('btn-confirmar-endereco')) {
-        document.getElementById('btn-confirmar-endereco').addEventListener('click', confirmarEndereco);
+    // Inicializar eventos quando o modal for aberto
+    var modalCEP = document.getElementById('modal-cep');
+    if (modalCEP) {
+        modalCEP.addEventListener('shown.bs.modal', function() {
+            inicializarModalCEP();
+        });
+        
+        // Também inicializar se o modal já estiver visível
+        if (modalCEP.classList.contains('show')) {
+            inicializarModalCEP();
+        }
     }
     
-    // Carregar endereço salvo ao carregar a página
+    // Inicializar eventos ao carregar a página
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', carregarEnderecoSalvo);
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarModalCEP();
+            carregarEnderecoSalvo();
+        });
     } else {
+        inicializarModalCEP();
         carregarEnderecoSalvo();
+    }
+    
+    // Também inicializar quando o botão de abrir modal for clicado
+    var btnAbrirModal = document.querySelector('.js-header-postal-code');
+    if (btnAbrirModal) {
+        btnAbrirModal.addEventListener('click', function() {
+            setTimeout(function() {
+                inicializarModalCEP();
+            }, 300);
+        });
     }
     </script>
 
