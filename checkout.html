@@ -738,17 +738,86 @@ function validarCPF(cpf) {
     return true;
 }
 
-// Configuração do Supabase
-var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
+// Configuração do Supabase - Credenciais serão carregadas dinamicamente
+// URL base do Supabase (pode ser pública)
+var SUPABASE_BASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 
-// Configuração da API PIX Duttyfy
-// IMPORTANTE: Use sempre a URL encriptada gerada no painel (Chaves API → Gerar URL encriptada)
-// Não use a chave bruta na URL. Substitua pela sua URL encriptada completa abaixo.
-var DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/ObVzUOhxlLh4Mxcn3bWF6gRwM5r96EEJ3oe0psyE-LLgTYt6BQy-K9ge1KmCi1B5sr9HEr8zikcDeuAHNeNR4w';
+// Variáveis globais para credenciais (serão carregadas da Edge Function)
+var SUPABASE_URL = null;
+var SUPABASE_KEY = null;
+var DUTTYFY_PIX_URL_ENCRIPTADA = null;
+
+// Função para carregar credenciais do Supabase de forma segura
+function carregarCredenciais() {
+    return new Promise(function(resolve, reject) {
+        // Verificar se já temos credenciais em cache (sessionStorage)
+        var credenciaisCache = sessionStorage.getItem('app_credentials');
+        if (credenciaisCache) {
+            try {
+                var credenciais = JSON.parse(credenciaisCache);
+                SUPABASE_URL = credenciais.supabaseUrl;
+                SUPABASE_KEY = credenciais.supabaseAnonKey;
+                DUTTYFY_PIX_URL_ENCRIPTADA = credenciais.pixApiUrl;
+                console.log('Credenciais carregadas do cache');
+                resolve(credenciais);
+                return;
+            } catch (e) {
+                console.warn('Erro ao parsear cache de credenciais:', e);
+            }
+        }
+        
+        // Buscar credenciais da Edge Function do Supabase
+        fetch(SUPABASE_BASE_URL + '/functions/v1/get-credentials', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Erro ao buscar credenciais: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(credenciais) {
+            // Armazenar credenciais nas variáveis globais
+            SUPABASE_URL = credenciais.supabaseUrl;
+            SUPABASE_KEY = credenciais.supabaseAnonKey;
+            DUTTYFY_PIX_URL_ENCRIPTADA = credenciais.pixApiUrl;
+            
+            // Cachear credenciais na sessão (válido por 1 hora)
+            sessionStorage.setItem('app_credentials', JSON.stringify(credenciais));
+            sessionStorage.setItem('app_credentials_timestamp', Date.now().toString());
+            
+            console.log('Credenciais carregadas com sucesso da Edge Function');
+            resolve(credenciais);
+        })
+        .catch(function(error) {
+            console.error('Erro ao carregar credenciais:', error);
+            // Fallback para valores padrão caso a função não esteja disponível
+            SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
+            SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
+            DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/ObVzUOhxlLh4Mxcn3bWF6gRwM5r96EEJ3oe0psyE-LLgTYt6BQy-K9ge1KmCi1B5sr9HEr8zikcDeuAHNeNR4w';
+            console.warn('Usando credenciais de fallback');
+            resolve({
+                supabaseUrl: SUPABASE_URL,
+                supabaseAnonKey: SUPABASE_KEY,
+                pixApiUrl: DUTTYFY_PIX_URL_ENCRIPTADA
+            });
+        });
+    });
+}
+
+// Carregar credenciais ao carregar a página
+carregarCredenciais();
 
 // Função para chamar API através do Supabase (proxy CORS) com fallback
 function chamarAPIViaSupabase(endpoint, method, data) {
+    // Garantir que temos as credenciais antes de fazer a chamada
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+        return Promise.reject(new Error('Credenciais não carregadas. Aguarde o carregamento.'));
+    }
+    
     var url = SUPABASE_URL + '/functions/v1/smooth-endpoint';
     
     console.log('Chamando Supabase Edge Function:', url);
@@ -882,83 +951,94 @@ function gerarPIX(formData, cart, total) {
     btnFinalizar.disabled = true;
     btnFinalizar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Gerando PIX...';
     
-    // Preparar dados para a API
-    var cpfLimpo = formData.cpf.replace(/\D/g, '');
-    var telefoneLimpo = formData.telefone.replace(/\D/g, '');
-    var valorCentavos = Math.round(total * 100); // Converter para centavos
-    
-    // Pegar o primeiro item do carrinho para o item
-    var primeiroItem = cart[0];
-    var nomeItem = primeiroItem ? primeiroItem.name : 'Produto';
-    var precoItem = primeiroItem ? Math.round(primeiroItem.price * 100) : valorCentavos;
-    var quantidadeItem = primeiroItem ? primeiroItem.quantity : 1;
-    
-    var pixData = {
-        amount: valorCentavos,
-        description: "Pagamento via Pix - Cacau Show",
-        customer: {
-            name: formData.nome,
-            document: cpfLimpo,
-            email: formData.email,
-            phone: telefoneLimpo
-        },
-        item: {
-            title: nomeItem,
-            price: precoItem,
-            quantity: quantidadeItem
-        },
-        paymentMethod: "PIX"
-        // utm é opcional conforme documentação, pode ser adicionado se necessário
-        // utm: "utm_source=site&utm_medium=checkout"
-    };
-    
-    // Usar a URL encriptada configurada no topo do arquivo
-    var apiUrl = DUTTYFY_PIX_URL_ENCRIPTADA;
-    
-    // Chamar API através do Supabase
-    chamarAPIViaSupabase(apiUrl, 'POST', pixData)
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(err.error || 'Erro na requisição: ' + response.status);
-            });
-        }
-        return response.json();
-    })
-    .then(result => {
-        // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
-        var data = result.data || result;
-        btnFinalizar.disabled = false;
-        btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
+    // Aguardar credenciais antes de continuar
+    carregarCredenciais().then(function() {
+        // Preparar dados para a API
+        var cpfLimpo = formData.cpf.replace(/\D/g, '');
+        var telefoneLimpo = formData.telefone.replace(/\D/g, '');
+        var valorCentavos = Math.round(total * 100); // Converter para centavos
         
-        if (data.error) {
-            alert('Erro ao gerar PIX: ' + data.error);
-            return;
-        }
+        // Pegar o primeiro item do carrinho para o item
+        var primeiroItem = cart[0];
+        var nomeItem = primeiroItem ? primeiroItem.name : 'Produto';
+        var precoItem = primeiroItem ? Math.round(primeiroItem.price * 100) : valorCentavos;
+        var quantidadeItem = primeiroItem ? primeiroItem.quantity : 1;
         
-        if (data.pixCode && data.transactionId) {
-            // Salvar dados do PIX
-            localStorage.setItem('pixCode', data.pixCode);
-            localStorage.setItem('transactionId', data.transactionId);
-            localStorage.setItem('checkoutData', JSON.stringify(formData));
+        var pixData = {
+            amount: valorCentavos,
+            description: "Pagamento via Pix - Cacau Show",
+            customer: {
+                name: formData.nome,
+                document: cpfLimpo,
+                email: formData.email,
+                phone: telefoneLimpo
+            },
+            item: {
+                title: nomeItem,
+                price: precoItem,
+                quantity: quantidadeItem
+            },
+            paymentMethod: "PIX"
+            // utm é opcional conforme documentação, pode ser adicionado se necessário
+            // utm: "utm_source=site&utm_medium=checkout"
+        };
+        
+        // Usar a URL encriptada carregada dinamicamente
+        if (!DUTTYFY_PIX_URL_ENCRIPTADA) {
+            throw new Error('Credenciais não carregadas. Por favor, recarregue a página.');
+        }
+        var apiUrl = DUTTYFY_PIX_URL_ENCRIPTADA;
+    
+        // Chamar API através do Supabase
+        chamarAPIViaSupabase(apiUrl, 'POST', pixData)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || 'Erro na requisição: ' + response.status);
+                });
+            }
+            return response.json();
+        })
+        .then(result => {
+            // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
+            var data = result.data || result;
+            btnFinalizar.disabled = false;
+            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
             
-            // Redirecionar para página de pagamento PIX
-            window.location.href = 'pagamento-pix.html';
-        } else {
-            alert('Erro ao gerar código PIX. Por favor, tente novamente.');
-        }
-    })
-    .catch(error => {
+            if (data.error) {
+                alert('Erro ao gerar PIX: ' + data.error);
+                return;
+            }
+            
+            if (data.pixCode && data.transactionId) {
+                // Salvar dados do PIX
+                localStorage.setItem('pixCode', data.pixCode);
+                localStorage.setItem('transactionId', data.transactionId);
+                localStorage.setItem('checkoutData', JSON.stringify(formData));
+                
+                // Redirecionar para página de pagamento PIX
+                window.location.href = 'pagamento-pix.html';
+            } else {
+                alert('Erro ao gerar código PIX. Por favor, tente novamente.');
+            }
+        })
+        .catch(error => {
+            btnFinalizar.disabled = false;
+            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
+            console.error('Erro ao gerar PIX:', error);
+            
+            // Se falhar com proxy, informar sobre CORS
+            if (error.message && error.message.includes('CORS')) {
+                alert('Erro de CORS detectado. A API requer configuração de servidor para funcionar corretamente. Por favor, entre em contato com o suporte técnico.');
+            } else {
+                alert('Erro ao gerar PIX: ' + error.message + '. Por favor, tente novamente.');
+            }
+        });
+    }).catch(function(error) {
         btnFinalizar.disabled = false;
         btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
-        console.error('Erro ao gerar PIX:', error);
-        
-        // Se falhar com proxy, informar sobre CORS
-        if (error.message && error.message.includes('CORS')) {
-            alert('Erro de CORS detectado. A API requer configuração de servidor para funcionar corretamente. Por favor, entre em contato com o suporte técnico.');
-        } else {
-            alert('Erro ao gerar PIX: ' + error.message + '. Por favor, tente novamente.');
-        }
+        console.error('Erro ao carregar credenciais:', error);
+        alert('Erro ao carregar configurações. Por favor, recarregue a página.');
     });
 }
 
