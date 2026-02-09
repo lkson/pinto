@@ -974,11 +974,37 @@ function chamarAPIViaProxyPublico(endpoint, method, data) {
     return tentarProxy(0);
 }
 
+// Variável para controlar se já existe uma requisição em andamento
+var pixRequestInProgress = false;
+
 // Função para gerar PIX
 function gerarPIX(formData, cart, total) {
+    // CONTROLE DE DUPLICAÇÃO: Verificar se já existe uma requisição em andamento
+    if (pixRequestInProgress) {
+        console.warn('Requisição PIX já em andamento. Aguarde...');
+        return;
+    }
+    
+    // CONTROLE DE DUPLICAÇÃO: Verificar se já existe um transactionId pendente
+    var existingTransactionId = localStorage.getItem('transactionId');
+    if (existingTransactionId) {
+        var confirmar = confirm('Já existe um pagamento PIX em andamento. Deseja continuar com o pagamento anterior ou criar um novo?');
+        if (!confirmar) {
+            // Redirecionar para página de pagamento existente
+            window.location.href = 'pagamento-pix.html';
+            return;
+        }
+        // Se confirmar, limpar o anterior e criar novo
+        localStorage.removeItem('pixCode');
+        localStorage.removeItem('transactionId');
+    }
+    
     var btnFinalizar = document.getElementById('btn-finalizar');
     btnFinalizar.disabled = true;
     btnFinalizar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Gerando PIX...';
+    
+    // Marcar que uma requisição está em andamento
+    pixRequestInProgress = true;
     
     // Aguardar credenciais antes de continuar
     carregarCredenciais().then(function() {
@@ -1063,13 +1089,25 @@ function gerarPIX(formData, cart, total) {
                 localStorage.setItem('transactionId', data.transactionId);
                 localStorage.setItem('checkoutData', JSON.stringify(formData));
                 
+                // Marcar timestamp da transação para controle
+                localStorage.setItem('pixTransactionTimestamp', Date.now().toString());
+                
+                // Liberar flag de requisição em andamento
+                pixRequestInProgress = false;
+                
                 // Redirecionar para página de pagamento PIX
                 window.location.href = 'pagamento-pix.html';
             } else {
+                // Liberar flag de requisição em andamento
+                pixRequestInProgress = false;
+                btnFinalizar.disabled = false;
+                btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
                 alert('Erro ao gerar código PIX. Por favor, tente novamente.');
             }
         })
         .catch(function(error) {
+            // Liberar flag de requisição em andamento em caso de erro
+            pixRequestInProgress = false;
             btnFinalizar.disabled = false;
             btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
             console.error('Erro ao gerar PIX:', error);
