@@ -304,14 +304,30 @@ window.SitePreferences = {"postalCodesBR":"{\"postalCodesBR\":[\n{\"state\":\"ac
     bottom: 100px !important;
 }*/
 
-/* Ajustar posicionamento da imagem "feliz hoje" para não cobrir os ícones sociais */
+/* Alinhar logos Cacau Show e feliz hoje verticalmente */
+.footer__header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 15px !important;
+}
+
+.footer__logo {
+    margin: 0 !important;
+}
+
 .footer__image {
-    margin-top: 5px !important;
+    margin-top: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
 .footer__image img {
-    position: relative;
-    top: 3px;
+    position: relative !important;
+    top: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
 }
 
 /* Move badge to the left side */
@@ -1983,7 +1999,9 @@ Alterar
                 <div class="footer__logo">
                     <span class="icon-big_logo"></span>
                 </div>
-
+                <div class="footer__image">
+                    <img src="images/bg_footer-feliz.png" alt="Cacau Show">
+                </div>
             </div>
 
             <div class="row footer__main mx-0">
@@ -2100,18 +2118,6 @@ Alterar
 
 
                     </div>
-
-                    <div class="d-none d-sm-block footer__image">
-                        <img src="images/bg_footer-feliz.png" alt="Cacau Show">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="container d-sm-none footer__image">
-            <div class="row">
-                <div class="col-12">
-                    <img src="images/bg_footer-feliz.png" alt="Cacau Show">
                 </div>
             </div>
         </div>
