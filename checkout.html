@@ -750,6 +750,11 @@ function validarCPF(cpf) {
 var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
 
+// Configuração da API PIX Duttyfy
+// IMPORTANTE: Use sempre a URL encriptada gerada no painel (Chaves API → Gerar URL encriptada)
+// Não use a chave bruta na URL. Substitua pela sua URL encriptada completa abaixo.
+var DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/ObVzUOhxlLh4Mxcn3bWF6gRwM5r96EEJ3oe0psyE-LLgTYt6BQy-K9ge1KmCi1B5sr9HEr8zikcDeuAHNeNR4w';
+
 // Função para chamar API através do Supabase (proxy CORS) com fallback
 function chamarAPIViaSupabase(endpoint, method, data) {
     var url = SUPABASE_URL + '/functions/v1/smooth-endpoint';
@@ -792,37 +797,91 @@ function chamarAPIViaSupabase(endpoint, method, data) {
     });
 }
 
-// Função fallback usando proxy CORS público
+// Função fallback usando proxy CORS público com múltiplas tentativas
+// Versão atualizada: 2026-02-09 - Proxies melhorados
 function chamarAPIViaProxyPublico(endpoint, method, data) {
-    console.log('Usando proxy CORS público como fallback');
+    console.log('Usando proxy CORS público como fallback (v2.0)');
     
-    // Usar corsproxy.org como fallback
-    var proxyUrl = 'https://corsproxy.org/?';
-    var finalUrl = proxyUrl + encodeURIComponent(endpoint);
+    // Lista de proxies CORS alternativos para tentar em sequência
+    // Usando proxies mais confiáveis e que suportam POST
+    var proxies = [
+        {
+            url: 'https://api.allorigins.win/raw?url=',
+            format: 'encoded'
+        },
+        {
+            url: 'https://corsproxy.io/?',
+            format: 'encoded'
+        },
+        {
+            url: 'https://api.codetabs.com/v1/proxy?quest=',
+            format: 'encoded'
+        }
+    ];
     
     var fetchOptions = {
         method: method || 'GET',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        mode: 'cors',
+        cache: 'no-cache'
     };
     
     if (data && (method === 'POST' || method === 'PUT')) {
         fetchOptions.body = JSON.stringify(data);
     }
     
-    return fetch(finalUrl, fetchOptions)
-        .then(response => {
-            console.log('Resposta do proxy público - Status:', response.status);
-            if (!response.ok) {
-                throw new Error('Erro na requisição: ' + response.status);
-            }
-            return response;
-        })
-        .catch(error => {
-            console.error('Erro no proxy público:', error);
-            throw error;
-        });
+    // Função recursiva para tentar cada proxy
+    function tentarProxy(index) {
+        if (index >= proxies.length) {
+            // Se todos os proxies falharam, mostrar erro informativo
+            console.error('Todos os proxies CORS falharam');
+            var errorMsg = 'Não foi possível conectar à API de pagamento. ';
+            errorMsg += 'Isso pode ser devido a restrições de CORS. ';
+            errorMsg += 'Por favor, verifique se o Supabase Edge Function está configurado corretamente ou entre em contato com o suporte técnico.';
+            throw new Error(errorMsg);
+        }
+        
+        var proxy = proxies[index];
+        var finalUrl;
+        
+        // Formatar URL conforme o tipo de proxy
+        if (proxy.format === 'encoded') {
+            finalUrl = proxy.url + encodeURIComponent(endpoint);
+        } else {
+            finalUrl = proxy.url + endpoint;
+        }
+        
+        console.log('Tentando proxy ' + (index + 1) + ' de ' + proxies.length + ':', proxy.url);
+        
+        return fetch(finalUrl, fetchOptions)
+            .then(function(response) {
+                console.log('Resposta do proxy ' + (index + 1) + ' - Status:', response.status);
+                
+                // Verificar se a resposta é válida
+                if (!response.ok) {
+                    // Se for erro 4xx ou 5xx, tentar próximo proxy
+                    throw new Error('Erro HTTP ' + response.status);
+                }
+                
+                // Verificar se a resposta tem conteúdo JSON válido
+                var contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response;
+                } else {
+                    // Se não for JSON, pode ser que o proxy retornou HTML de erro
+                    throw new Error('Resposta não é JSON válido');
+                }
+            })
+            .catch(function(error) {
+                console.warn('Proxy ' + (index + 1) + ' falhou:', error.message);
+                // Tentar próximo proxy
+                return tentarProxy(index + 1);
+            });
+    }
+    
+    return tentarProxy(0);
 }
 
 // Função para gerar PIX
@@ -857,10 +916,12 @@ function gerarPIX(formData, cart, total) {
             quantity: quantidadeItem
         },
         paymentMethod: "PIX"
+        // utm é opcional conforme documentação, pode ser adicionado se necessário
+        // utm: "utm_source=site&utm_medium=checkout"
     };
     
-    var apiKey = 'GcUMYUZW7Z4Mhd1SFxv_aV-URlF6u2iUg5L3xcC2j0ZSDfKvwBu5lQ8yBrrB32ccWwpeL83wlDEwZyoxOi1JCA';
-    var apiUrl = 'https://app.duttyfy.com.br/api-pix/' + apiKey;
+    // Usar a URL encriptada configurada no topo do arquivo
+    var apiUrl = DUTTYFY_PIX_URL_ENCRIPTADA;
     
     // Chamar API através do Supabase
     chamarAPIViaSupabase(apiUrl, 'POST', pixData)
