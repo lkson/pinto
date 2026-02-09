@@ -354,7 +354,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<!-- Biblioteca QRCode - tentar carregar de múltiplas fontes -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" 
+        onload="console.log('QRCode library loaded successfully')"
+        onerror="console.error('Failed to load QRCode from CDN')"></script>
+<!-- Fallback: API QR Code Server -->
+<script>
+// Função auxiliar para garantir que temos uma forma de gerar QR Code
+window.gerarQRCodeFallback = function(texto, container) {
+    var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(texto);
+    var img = document.createElement('img');
+    img.src = qrApiUrl;
+    img.alt = 'QR Code PIX';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
+    img.style.maxWidth = '100%';
+    img.style.height = 'auto';
+    img.style.border = '1px solid #ddd';
+    img.style.borderRadius = '8px';
+    container.innerHTML = '';
+    container.appendChild(img);
+    return img;
+};
+</script>
 <script>
 // Função para atualizar badge do carrinho
 function updateCartBadge() {
@@ -668,11 +690,39 @@ window.addEventListener('DOMContentLoaded', function() {
     var qrContainer = document.getElementById('pix-qr-code');
     qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;"><p style="color: #666;">Gerando QR Code...</p></div>';
     
-    // Função para gerar QR Code
-    function gerarQRCode() {
+    console.log('PIX Code recebido:', pixCode ? pixCode.substring(0, 50) + '...' : 'VAZIO');
+    console.log('QRCode disponível?', typeof QRCode !== 'undefined');
+    
+    // Função para gerar QR Code usando API online como fallback
+    function gerarQRCodeViaAPI(pixCode) {
+        // Usar API pública para gerar QR Code
+        var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(pixCode);
+        var img = document.createElement('img');
+        img.src = qrApiUrl;
+        img.alt = 'QR Code PIX';
+        img.style.display = 'block';
+        img.style.margin = '0 auto';
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.border = '1px solid #ddd';
+        img.style.borderRadius = '8px';
+        img.onerror = function() {
+            console.error('Erro ao carregar QR Code via API');
+            qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;"><p style="color: #dc3545; margin-bottom: 10px;">Erro ao gerar QR Code.</p><p style="color: #666; font-size: 14px;">Use o código PIX abaixo para pagar.</p></div>';
+        };
+        img.onload = function() {
+            console.log('QR Code carregado via API com sucesso');
+        };
+        qrContainer.innerHTML = '';
+        qrContainer.appendChild(img);
+    }
+    
+    // Função para gerar QR Code usando biblioteca local
+    function gerarQRCodeLocal() {
         qrContainer.innerHTML = ''; // Limpar container
         
         if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+            console.log('Usando biblioteca QRCode local');
             // Criar elemento canvas para o QR Code
             var canvas = document.createElement('canvas');
             qrContainer.appendChild(canvas);
@@ -688,38 +738,37 @@ window.addEventListener('DOMContentLoaded', function() {
                 errorCorrectionLevel: 'M'
             }, function(error) {
                 if (error) {
-                    console.error('Erro ao gerar QR Code:', error);
-                    qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;"><p style="color: #dc3545; margin-bottom: 10px;">Erro ao gerar QR Code.</p><p style="color: #666; font-size: 14px;">Use o código PIX abaixo para pagar.</p></div>';
+                    console.error('Erro ao gerar QR Code local:', error);
+                    // Tentar API online como fallback
+                    gerarQRCodeViaAPI(pixCode);
                 } else {
-                    console.log('QR Code gerado com sucesso');
+                    console.log('QR Code gerado localmente com sucesso');
                     // Adicionar estilo ao canvas
                     canvas.style.display = 'block';
                     canvas.style.margin = '0 auto';
                     canvas.style.maxWidth = '100%';
                     canvas.style.height = 'auto';
+                    canvas.style.border = '1px solid #ddd';
+                    canvas.style.borderRadius = '8px';
                 }
             });
         } else {
-            // Fallback se a biblioteca não carregar - tentar novamente
-            console.warn('Biblioteca QRCode não disponível, aguardando...');
-            var tentativas = 0;
-            var maxTentativas = 10;
-            
-            var verificarBiblioteca = setInterval(function() {
-                tentativas++;
-                if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
-                    clearInterval(verificarBiblioteca);
-                    gerarQRCode();
-                } else if (tentativas >= maxTentativas) {
-                    clearInterval(verificarBiblioteca);
-                    qrContainer.innerHTML = '<div style="padding: 40px; background: #f8f8f8; border-radius: 8px; text-align: center;"><p style="color: #666; margin-bottom: 15px;">Escaneie o código PIX abaixo com o aplicativo do seu banco:</p><p style="font-size: 12px; color: #999;">Use o código PIX copiável abaixo</p></div>';
-                }
-            }, 200);
+            console.warn('Biblioteca QRCode não disponível, usando API online');
+            // Usar API online diretamente
+            gerarQRCodeViaAPI(pixCode);
         }
     }
     
-    // Aguardar um pouco para garantir que a biblioteca está carregada
-    setTimeout(gerarQRCode, 300);
+    // Verificar se pixCode existe
+    if (!pixCode || pixCode.trim() === '') {
+        console.error('PIX Code está vazio!');
+        qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;"><p style="color: #dc3545; margin-bottom: 10px;">Erro: Código PIX não encontrado.</p><p style="color: #666; font-size: 14px;">Por favor, finalize a compra novamente.</p></div>';
+    } else {
+        // Aguardar um pouco para garantir que a biblioteca está carregada
+        setTimeout(function() {
+            gerarQRCodeLocal();
+        }, 500);
+    }
     
     // Mostrar conteúdo
     document.getElementById('pix-loading').style.display = 'none';
