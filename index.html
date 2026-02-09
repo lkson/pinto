@@ -1732,13 +1732,15 @@ Alterar
         updateCartBadge();
     }
     
+    // Variáveis globais para armazenar geolocalização
+    var geolocalizacaoAtual = null;
+    
     // Função para buscar CEP usando ViaCEP API
     function buscarCEPModal() {
         var cep = document.getElementById('customer-postal-code').value.replace(/\D/g, '');
         var loadingDiv = document.getElementById('cep-loading-modal');
-        var btnBuscar = document.getElementById('btn-buscar-cep-modal');
-        var enderecoCampos = document.getElementById('endereco-campos');
-        var btnConfirmar = document.getElementById('btn-confirmar-endereco');
+        var geolocalizacaoInfo = document.getElementById('geolocalizacao-info');
+        var geolocalizacaoTexto = document.getElementById('geolocalizacao-texto');
         
         if (cep.length !== 8) {
             alert('Por favor, digite um CEP válido com 8 dígitos.');
@@ -1746,35 +1748,33 @@ Alterar
         }
         
         loadingDiv.style.display = 'block';
-        btnBuscar.disabled = true;
+        geolocalizacaoInfo.style.display = 'none';
         
         fetch(`https://viacep.com.br/ws/${cep}/json/`)
             .then(response => response.json())
             .then(data => {
                 loadingDiv.style.display = 'none';
-                btnBuscar.disabled = false;
                 
                 if (data.erro) {
                     alert('CEP não encontrado. Por favor, verifique e tente novamente.');
                     return;
                 }
                 
-                // Preencher campos automaticamente
-                document.getElementById('customer-street').value = data.logradouro || '';
-                document.getElementById('customer-neighborhood').value = data.bairro || '';
-                document.getElementById('customer-city').value = data.localidade || '';
-                document.getElementById('customer-state').value = data.uf || '';
+                // Armazenar geolocalização
+                geolocalizacaoAtual = {
+                    cidade: data.localidade || '',
+                    estado: data.uf || ''
+                };
                 
-                // Mostrar campos de endereço
-                enderecoCampos.style.display = 'block';
-                btnConfirmar.style.display = 'inline-block';
+                // Mostrar geolocalização
+                geolocalizacaoTexto.textContent = geolocalizacaoAtual.cidade + ' - ' + geolocalizacaoAtual.estado;
+                geolocalizacaoInfo.style.display = 'block';
                 
-                // Focar no campo número após preencher
+                // Focar no campo número após buscar
                 document.getElementById('customer-street-number').focus();
             })
             .catch(error => {
                 loadingDiv.style.display = 'none';
-                btnBuscar.disabled = false;
                 alert('Erro ao buscar CEP. Por favor, tente novamente.');
                 console.error('Erro:', error);
             });
@@ -1782,33 +1782,37 @@ Alterar
     
     // Função para salvar localização e atualizar header
     function confirmarEndereco() {
-        var cidade = document.getElementById('customer-city').value;
-        var estado = document.getElementById('customer-state').value;
-        var cep = document.getElementById('customer-postal-code').value;
-        var rua = document.getElementById('customer-street').value;
-        var numero = document.getElementById('customer-street-number').value;
-        var bairro = document.getElementById('customer-neighborhood').value;
+        var cep = document.getElementById('customer-postal-code').value.replace(/\D/g, '');
+        var numero = document.getElementById('customer-street-number').value.trim();
         
-        if (!cidade || !estado || !numero) {
-            alert('Por favor, preencha todos os campos obrigatórios.');
+        if (cep.length !== 8) {
+            alert('Por favor, digite um CEP válido.');
+            return;
+        }
+        
+        if (!numero) {
+            alert('Por favor, preencha o número da residência.');
+            return;
+        }
+        
+        if (!geolocalizacaoAtual || !geolocalizacaoAtual.cidade || !geolocalizacaoAtual.estado) {
+            alert('Por favor, busque o CEP primeiro para obter a localização.');
             return;
         }
         
         // Salvar no localStorage
         var endereco = {
-            cidade: cidade,
-            estado: estado,
+            cidade: geolocalizacaoAtual.cidade,
+            estado: geolocalizacaoAtual.estado,
             cep: cep,
-            rua: rua,
-            numero: numero,
-            bairro: bairro
+            numero: numero
         };
         localStorage.setItem('cacaushow_endereco', JSON.stringify(endereco));
         
         // Atualizar texto no header
         var addressSpan = document.querySelector('.it__changeCep__address');
         if (addressSpan) {
-            addressSpan.textContent = 'Cacau Show - ' + estado;
+            addressSpan.textContent = 'Cacau Show - ' + geolocalizacaoAtual.estado;
         }
         
         // Fechar modal
@@ -1844,12 +1848,19 @@ Alterar
     }
     
     // Event listeners para busca de CEP
-    if (document.getElementById('btn-buscar-cep-modal')) {
-        document.getElementById('btn-buscar-cep-modal').addEventListener('click', buscarCEPModal);
-    }
-    
     if (document.getElementById('customer-postal-code')) {
-        document.getElementById('customer-postal-code').addEventListener('keypress', function(e) {
+        var cepInput = document.getElementById('customer-postal-code');
+        
+        // Buscar quando perder o foco e tiver 8 dígitos
+        cepInput.addEventListener('blur', function() {
+            var cep = this.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                buscarCEPModal();
+            }
+        });
+        
+        // Buscar ao pressionar Enter
+        cepInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 buscarCEPModal();
@@ -2127,96 +2138,30 @@ Alterar
                 <div class="modal-body">
                     <div class="d-flex form-row flex-row justify-content-between mb-1">
                         
-                        <div class="form-group required" style="flex: 1; margin-right: 10px;">
+                        <div class="form-group required">
                             <label class="form-control-label" for="customer-postal-code">
-                                CEP
+                                Cep
                             </label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" class="form-control js-postal-code-format postal-code-input base-input" id="customer-postal-code" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Por favor inserir um codigo postal válido" required="" autocomplete="postal-code" autofocus="" name="dwfrm_storeUpdate_postalCode" aria-required="true" value="" maxlength="9" minlength="8" placeholder="00000-000">
-                                <button type="button" id="btn-buscar-cep-modal" class="btn btn-primary" style="white-space: nowrap;">
-                                    <i class="fa fa-search"></i> Buscar
-                                </button>
-                            </div>
+                            <input type="text" class="form-control js-postal-code-format postal-code-input base-input" id="customer-postal-code" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Por favor inserir um codigo postal válido" required="" autocomplete="postal-code" autofocus="" name="dwfrm_storeUpdate_postalCode" aria-required="true" value="" maxlength="9" minlength="8">
                             <div id="cep-loading-modal" style="display: none; margin-top: 8px; color: #666;">
                                 <i class="fa fa-spinner fa-spin"></i> Buscando endereço...
                             </div>
                             <div class="invalid-feedback" id="zipCode-error"></div>
                         </div>
+
+                        
+                        <div class="form-group required">
+                            <label class="form-control-label" for="customer-street-number">
+                                Número
+                            </label>
+                            <input type="text" class="form-control postal-code-input base-input" id="customer-street-number" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo só pode conter números." required="" name="dwfrm_storeUpdate_streetNumber" aria-required="true" value="" maxlength="50" pattern="[0-9]+" autocomplete="shipping address-number">
+                            <div class="invalid-feedback" id="userNum-error"></div>
+                        </div>
                     </div>
 
-                    <div id="endereco-campos" style="display: none; margin-top: 20px;">
-                        <div class="form-group required">
-                            <label class="form-control-label" for="customer-street">
-                                Rua/Logradouro
-                            </label>
-                            <input type="text" class="form-control base-input" id="customer-street" name="dwfrm_storeUpdate_customerAddress_street" value="" maxlength="2147483647" autocomplete="shipping address1">
-                            <div class="invalid-feedback"></div>
-                        </div>
-
-                        <div class="d-flex form-row flex-row justify-content-between mb-1">
-                            <div class="form-group required" style="flex: 1; margin-right: 10px;">
-                                <label class="form-control-label" for="customer-street-number">
-                                    Número
-                                </label>
-                                <input type="text" class="form-control postal-code-input base-input" id="customer-street-number" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo só pode conter números." required="" name="dwfrm_storeUpdate_streetNumber" aria-required="true" value="" maxlength="50" pattern="[0-9]+" autocomplete="shipping address-number">
-                                <div class="invalid-feedback" id="userNum-error"></div>
-                            </div>
-
-                            <div class="form-group" style="flex: 1;">
-                                <label class="form-control-label" for="customer-neighborhood">
-                                    Bairro
-                                </label>
-                                <input type="text" class="form-control base-input" id="customer-neighborhood" name="dwfrm_storeUpdate_customerAddress_neighborhood" value="" maxlength="2147483647" autocomplete="shipping address2">
-                                <div class="invalid-feedback"></div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex form-row flex-row justify-content-between mb-1">
-                            <div class="form-group required" style="flex: 1; margin-right: 10px;">
-                                <label class="form-control-label" for="customer-city">
-                                    Cidade
-                                </label>
-                                <input type="text" class="form-control base-input" id="customer-city" name="dwfrm_storeUpdate_customerAddress_city" value="" maxlength="2147483647" autocomplete="shipping city" readonly>
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <div class="form-group required" style="flex: 1;">
-                                <label class="form-control-label" for="customer-state">
-                                    Estado
-                                </label>
-                                <select class="form-control shippingState custom-select" id="customer-state" autocomplete="shipping address-level1" name="dwfrm_storeUpdate_customerAddress_state" required="" aria-required="true" readonly>
-                                    <option value="">Selecione</option>
-                                    <option value="AC">Acre</option>
-                                    <option value="AL">Alagoas</option>
-                                    <option value="AP">Amapá</option>
-                                    <option value="AM">Amazonas</option>
-                                    <option value="BA">Bahia</option>
-                                    <option value="CE">Ceará</option>
-                                    <option value="DF">Distrito Federal</option>
-                                    <option value="ES">Espírito Santo</option>
-                                    <option value="GO">Goiás</option>
-                                    <option value="MA">Maranhão</option>
-                                    <option value="MT">Mato Grosso</option>
-                                    <option value="MS">Mato Grosso do Sul</option>
-                                    <option value="MG">Minas Gerais</option>
-                                    <option value="PA">Pará</option>
-                                    <option value="PB">Paraíba</option>
-                                    <option value="PR">Paraná</option>
-                                    <option value="PE">Pernambuco</option>
-                                    <option value="PI">Piauí</option>
-                                    <option value="RJ">Rio de Janeiro</option>
-                                    <option value="RN">Rio Grande do Norte</option>
-                                    <option value="RS">Rio Grande do Sul</option>
-                                    <option value="RO">Rondônia</option>
-                                    <option value="RR">Roraima</option>
-                                    <option value="SC">Santa Catarina</option>
-                                    <option value="SP" selected>São Paulo</option>
-                                    <option value="SE">Sergipe</option>
-                                    <option value="TO">Tocantins</option>
-                                </select>
-                                <div class="invalid-feedback"></div>
-                            </div>
-                        </div>
+                    <div id="geolocalizacao-info" style="display: none; margin-top: 15px; padding: 12px; background: #f0f0f0; border-radius: 4px;">
+                        <strong>Localização encontrada:</strong>
+                        <div id="geolocalizacao-texto" style="margin-top: 5px;"></div>
                     </div>
 
                     <a href="#" onclick="return false;" data-original-href="https://buscacepinter.correios.com.br/app/endereco/index.php" class="btn-postal-code" rel="noopener" role="button" target="_blank" title="Não sei meu CEP">
@@ -2237,7 +2182,7 @@ Alterar
                 <div class="modal-footer">
                     <input type="hidden" name="csrf_token" value="LQzyyXJB1IraRin75j8ZBPy7cwjWSMG9BSRHPjzBGtFUueuDsI4hcfQn7XXGNbITg6dgsq-wCfhgZC4zkVIpyGHrCBvKkiY5-ez5KlBoxI9MnMRqWvGFOe-tBLi8MeCGWfDi86txcNWq4LuROyd_pezi0TDGTrBd_ktI8X-cn0vENzr80Q4=">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" id="btn-confirmar-endereco" class="btn btn-primary" style="display: none;">
+                    <button type="button" id="btn-confirmar-endereco" class="btn btn-primary">
                         Confirmar
                     </button>
                 </div>
