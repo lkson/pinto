@@ -413,7 +413,7 @@ var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 // Função para chamar API através do Supabase (proxy CORS) com fallback
 function chamarAPIViaSupabase(endpoint, method, data) {
-    var url = SUPABASE_URL + '/functions/v1/pix-proxy';
+    var url = SUPABASE_URL + '/functions/v1/smooth-endpoint';
     
     console.log('Chamando Supabase Edge Function:', url);
     console.log('Endpoint destino:', endpoint);
