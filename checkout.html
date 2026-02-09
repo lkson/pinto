@@ -839,21 +839,50 @@ function chamarAPIViaSupabase(endpoint, method, data) {
             data: data
         })
     })
-    .then(response => {
+    .then(function(response) {
         console.log('Resposta do Supabase - Status:', response.status);
-        console.log('Resposta do Supabase - Headers:', response.headers);
+        console.log('Resposta do Supabase - OK:', response.ok);
         
-        // Se retornar 405 (Method Not Allowed) ou qualquer erro, usar fallback
-        if (response.status === 405 || !response.ok) {
-            console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
+        // Se retornar erro, tentar parsear o erro primeiro
+        if (!response.ok) {
+            return response.text().then(function(text) {
+                console.error('Erro do Supabase:', text);
+                var errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch (e) {
+                    errorData = { error: text || 'Erro desconhecido' };
+                }
+                
+                // Se for erro 405 ou 404, a função pode não estar deployada
+                if (response.status === 405 || response.status === 404) {
+                    throw new Error('Supabase Edge Function não encontrada ou não configurada. Status: ' + response.status + '. Verifique se a função smooth-endpoint está deployada.');
+                }
+                
+                // Para outros erros, tentar fallback
+                console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
+                return chamarAPIViaProxyPublico(endpoint, method, data);
+            });
+        }
+        
+        // Se OK, retornar a resposta
+        return response;
+    })
+    .catch(function(error) {
+        console.error('Erro ao chamar Supabase:', error);
+        
+        // Se for erro de rede ou CORS, tentar fallback
+        if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('CORS'))) {
+            console.warn('Erro de rede/CORS ao chamar Supabase, tentando fallback');
             return chamarAPIViaProxyPublico(endpoint, method, data);
         }
         
-        return response;
-    })
-    .catch(error => {
-        console.error('Erro ao chamar Supabase, tentando fallback:', error);
-        // Fallback: usar proxy CORS público
+        // Se for erro específico da função não encontrada, não tentar fallback
+        if (error.message && error.message.includes('Edge Function não encontrada')) {
+            throw error; // Propagar o erro para mostrar mensagem específica
+        }
+        
+        // Para outros erros, tentar fallback
         return chamarAPIViaProxyPublico(endpoint, method, data);
     });
 }
@@ -989,17 +1018,35 @@ function gerarPIX(formData, cart, total) {
         }
         var apiUrl = DUTTYFY_PIX_URL_ENCRIPTADA;
     
-        // Chamar API através do Supabase
-        chamarAPIViaSupabase(apiUrl, 'POST', pixData)
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || 'Erro na requisição: ' + response.status);
-                });
+        // Aguardar credenciais e chamar API através do Supabase
+        // Garantir que as credenciais estão carregadas antes de fazer a chamada
+        carregarCredenciais().then(function() {
+            if (!DUTTYFY_PIX_URL_ENCRIPTADA) {
+                throw new Error('Credenciais não carregadas. Por favor, recarregue a página.');
             }
-            return response.json();
+            
+            console.log('Chamando API PIX via Supabase...');
+            return chamarAPIViaSupabase(apiUrl, 'POST', pixData);
         })
-        .then(result => {
+        .then(function(response) {
+            console.log('Resposta recebida:', response);
+            
+            // Verificar se é uma Response do fetch ou já é um objeto
+            if (response instanceof Response) {
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.error || 'Erro na requisição: ' + response.status);
+                    });
+                }
+                return response.json();
+            } else {
+                // Já é um objeto JSON
+                return Promise.resolve(response);
+            }
+        })
+        .then(function(result) {
+            console.log('Resultado processado:', result);
+            
             // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
             var data = result.data || result;
             btnFinalizar.disabled = false;
@@ -1022,17 +1069,19 @@ function gerarPIX(formData, cart, total) {
                 alert('Erro ao gerar código PIX. Por favor, tente novamente.');
             }
         })
-        .catch(error => {
+        .catch(function(error) {
             btnFinalizar.disabled = false;
             btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
             console.error('Erro ao gerar PIX:', error);
             
-            // Se falhar com proxy, informar sobre CORS
-            if (error.message && error.message.includes('CORS')) {
-                alert('Erro de CORS detectado. A API requer configuração de servidor para funcionar corretamente. Por favor, entre em contato com o suporte técnico.');
+            // Mensagem de erro mais específica
+            var errorMsg = 'Erro ao gerar PIX. ';
+            if (error.message) {
+                errorMsg += error.message;
             } else {
-                alert('Erro ao gerar PIX: ' + error.message + '. Por favor, tente novamente.');
+                errorMsg += 'Por favor, verifique se a Supabase Edge Function está configurada corretamente.';
             }
+            alert(errorMsg);
         });
     }).catch(function(error) {
         btnFinalizar.disabled = false;
