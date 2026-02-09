@@ -134,10 +134,6 @@
 
 
 
-    <link rel="preload" href="https://www.googletagmanager.com/gtm.js?id=GTM-PQSFKTS" as="script">
-<link rel="preload" href="https://www.googletagmanager.com/gtag/js?id=G-TTZNN90HGX&l=dataLayer&cx=c" as="script">
-<link rel="preload" href="https://www.google-analytics.com/analytics.js" as="script">
-<link rel="preload" href="https://connect.facebook.net/en_US/fbevents.js" as="script">
 
 
 <!--[if gt IE 9]><!-->
@@ -186,75 +182,7 @@
 
 
     
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-PQSFKTS');</script>
-<!-- End Google Tag Manager -->
 
-    <script>
-  var storedUserId = sessionStorage.getItem('userId') || undefined,
-      pathName = window.location.pathname,
-      pageTypeByPathname = pathName.split('/')[1],
-      pageTypeDictionary = {
-    'home':'home',
-    'categoria':'category',
-    'produto':'product',
-    'busca':'internalsitesearch',
-    'carrinho':'cart',
-    'checkout':'checkout'
-  };
-
-if(!storedUserId){
-  // Redirecionamento removido - requisição desabilitada
-  // fetch('/on/demandware.store/Sites-CacauShow-Site/default/Account-PageView')
-  // .then(response => {
-  //   if (!response.ok) {
-  //     throw new Error('Network response was not ok fetching user id');
-  //   }
-  //   return response.json();
-  // })
-  // .then(data => {
-  //   sessionStorage.setItem('userId', data.userId)
-  //   pushPageView(data.userId);
-  // })
-  // .catch(error => {
-  //           window.dataLayer = window.dataLayer || [];
-  //           window.dataLayer.push({
-  //               event: 'dataLayerError',
-  //               error: 'Data Layer Error: ' + error.message
-  //           });
-  //           pushPageView(storedUserId);
-  // });
-  pushPageView(undefined);
-} else {
-  pushPageView(storedUserId);
-}
-
-  function pushPageView(storedUserId) {
-    const currentPage = window.location.pathname
-    window.dataLayer = window.dataLayer || []
-    window.dataLayer.push({
-        'event': 'virtualPageView',
-        'currentPage': currentPage,
-        'pageType': pageTypeDictionary[pageTypeByPathname],
-        'pageTitle': document.title,
-        'previousPage': getPreviousPage(currentPage),
-        'userID': storedUserId || null,
-    });
-  }
-
-
-
-  function getPreviousPage(currentPage) {
-    const previousPage = window.sessionStorage.getItem('dataLayer/previousPage');
-    window.sessionStorage.setItem('dataLayer/previousPage', currentPage);
-    return previousPage;
-  }
-
-</script>
 
 
 
@@ -279,7 +207,6 @@ if(!storedUserId){
     <meta name="google-site-verification" content="HV1li6dst_6LWYxjo7e_ada038iVt0t2L_nZE7TmS1Y">
 
 
-<meta name="facebook-domain-verification" content="52tht2pe7s2lmpwrlrz87cj928yooi">
 
 
 <script>
@@ -416,153 +343,6 @@ window.SitePreferences = {"postalCodesBR":"{\"postalCodesBR\":[\n{\"state\":\"ac
 </head><body class="" data-current-store="null"><input type="hidden" class="js-cart-abandonment-settings" data-is-enabled="true">
 
 
-<script type="text/javascript">//<!--
-/* <![CDATA[ (head-active_data.js) */
-var dw = (window.dw || {});
-dw.ac = {
-    _analytics: null,
-    _events: [],
-    _category: "",
-    _searchData: "",
-    _anact: "",
-    _anact_nohit_tag: "",
-    _analytics_enabled: "true",
-    _timeZone: "Etc/GMT+3",
-    _capture: function(configs) {
-        if (Object.prototype.toString.call(configs) === "[object Array]") {
-            configs.forEach(captureObject);
-            return;
-        }
-        dw.ac._events.push(configs);
-    },
-	capture: function() { 
-		dw.ac._capture(arguments);
-		// send to CQ as well:
-		if (window.CQuotient) {
-			window.CQuotient.trackEventsFromAC(arguments);
-		}
-	},
-    EV_PRD_SEARCHHIT: "searchhit",
-    EV_PRD_DETAIL: "detail",
-    EV_PRD_RECOMMENDATION: "recommendation",
-    EV_PRD_SETPRODUCT: "setproduct",
-    applyContext: function(context) {
-        if (typeof context === "object" && context.hasOwnProperty("category")) {
-        	dw.ac._category = context.category;
-        }
-        if (typeof context === "object" && context.hasOwnProperty("searchData")) {
-        	dw.ac._searchData = context.searchData;
-        }
-    },
-    setDWAnalytics: function(analytics) {
-        dw.ac._analytics = analytics;
-    },
-    eventsIsEmpty: function() {
-        return 0 == dw.ac._events.length;
-    }
-};
-/* ]]> */
-// -->
-</script>
-<script type="text/javascript">//<!--
-/* <![CDATA[ (head-cquotient.js) */
-var CQuotient = window.CQuotient = {};
-CQuotient.clientId = 'bfjd-CacauShow';
-CQuotient.realm = 'BFJD';
-CQuotient.siteId = 'CacauShow';
-CQuotient.instanceType = 'prd';
-CQuotient.locale = 'pt_BR';
-CQuotient.fbPixelId = '__UNKNOWN__';
-CQuotient.activities = [];
-CQuotient.cqcid='';
-CQuotient.cquid='';
-CQuotient.cqeid='';
-CQuotient.cqlid='';
-CQuotient.apiHost='api.cquotient.com';
-/* Turn this on to test against Staging Einstein */
-/* CQuotient.useTest= true; */
-CQuotient.useTest = ('true' === 'false');
-CQuotient.initFromCookies = function () {
-	var ca = document.cookie.split(';');
-	for(var i=0;i < ca.length;i++) {
-	  var c = ca[i];
-	  while (c.charAt(0)==' ') c = c.substring(1,c.length);
-	  if (c.indexOf('cqcid=') == 0) {
-		CQuotient.cqcid=c.substring('cqcid='.length,c.length);
-	  } else if (c.indexOf('cquid=') == 0) {
-		  var value = c.substring('cquid='.length,c.length);
-		  if (value) {
-		  	var split_value = value.split("|", 3);
-		  	if (split_value.length > 0) {
-			  CQuotient.cquid=split_value[0];
-		  	}
-		  	if (split_value.length > 1) {
-			  CQuotient.cqeid=split_value[1];
-		  	}
-		  	if (split_value.length > 2) {
-			  CQuotient.cqlid=split_value[2];
-		  	}
-		  }
-	  }
-	}
-}
-CQuotient.getCQCookieId = function () {
-	if(window.CQuotient.cqcid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cqcid;
-};
-CQuotient.getCQUserId = function () {
-	if(window.CQuotient.cquid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cquid;
-};
-CQuotient.getCQHashedEmail = function () {
-	if(window.CQuotient.cqeid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cqeid;
-};
-CQuotient.getCQHashedLogin = function () {
-	if(window.CQuotient.cqlid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cqlid;
-};
-CQuotient.trackEventsFromAC = function (/* Object or Array */ events) {
-try {
-	if (Object.prototype.toString.call(events) === "[object Array]") {
-		events.forEach(_trackASingleCQEvent);
-	} else {
-		CQuotient._trackASingleCQEvent(events);
-	}
-} catch(err) {}
-};
-CQuotient._trackASingleCQEvent = function ( /* Object */ event) {
-	if (event && event.id) {
-		if (event.type === dw.ac.EV_PRD_DETAIL) {
-			CQuotient.trackViewProduct( {id:'', alt_id: event.id, type: 'raw_sku'} );
-		} // not handling the other dw.ac.* events currently
-	}
-};
-CQuotient.trackViewProduct = function(/* Object */ cqParamData){
-	var cq_params = {};
-	cq_params.cookieId = CQuotient.getCQCookieId();
-	cq_params.userId = CQuotient.getCQUserId();
-	cq_params.emailId = CQuotient.getCQHashedEmail();
-	cq_params.loginId = CQuotient.getCQHashedLogin();
-	cq_params.product = cqParamData.product;
-	cq_params.realm = cqParamData.realm;
-	cq_params.siteId = cqParamData.siteId;
-	cq_params.instanceType = cqParamData.instanceType;
-	cq_params.locale = CQuotient.locale;
-	
-	if(CQuotient.sendActivity) {
-		CQuotient.sendActivity(CQuotient.clientId, 'viewProduct', cq_params);
-	} else {
-		CQuotient.activities.push({activityType: 'viewProduct', parameters: cq_params});
-	}
-};
-/* ]]> */
-// -->
-</script>
 
 
 
@@ -576,9 +356,6 @@ CQuotient.trackViewProduct = function(/* Object */ cqParamData){
 
     
 
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQSFKTS" height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
 
 
 
@@ -2184,7 +1961,7 @@ Alterar
     
     
     <div class="content-asset"><!-- dwMarker="content" dwContentID="4bca5d0fb5512994476a3b2659" -->
-        <div id="consent-tracking" class="alert mb-0 fixed-bottom text-center d-none" role="alert">
+        <div id="consent-tracking" class="alert mb-0 fixed-bottom text-center d-none" role="alert" style="display: none !important;">
      <div class="alert-content d-inline-block pt-1 pb-1"></div>
      <button type="button" class="affirm btn text-white pr-2 pl-2 mr-1 pb-1 pt-1 float-sm-right float-xs-center" data-dismiss="alert">Aceitar todos os cookies</button>
 </div>
@@ -2201,7 +1978,6 @@ Alterar
 <![endif]-->
 
 
-<span class="api-true  tracking-consent" data-caonline="true" data-url="/on/demandware.store/Sites-CacauShow-Site/pt_BR/ConsentTracking-GetContent?cid=tracking_hint" data-reject="/on/demandware.store/Sites-CacauShow-Site/pt_BR/ConsentTracking-SetConsent?consent=false" data-accept="/on/demandware.store/Sites-CacauShow-Site/pt_BR/ConsentTracking-SetConsent?consent=true" data-accepttext="Sim" data-rejecttext="Não" data-heading="Cookies" data-tokenname="csrf_token" data-token="m1tvLvGWRtBaI2I7ANdEUjT7N2M1k3-zn-7ABF3bN5KuG7C9C7CjdLnx6F3lBrGWJcrcjDyM7NxfaTDR-JPAo7h8JIUhxdw4PgQc7YzSJncK26hYP3ROh2Wu4kO27di1wbBWseIswcIZd7zrr8Qij26-rSMk6_wvl4XbFH0HIyKQcaC1zQA="></span>
 
 
 
@@ -2446,26 +2222,6 @@ Alterar
 
 
 
-<!-- Demandware Analytics code 1.0 (body_end-analytics-tracking-asynch.js) -->
-<script type="text/javascript">//<!--
-/* <![CDATA[ */
-function trackPage() {
-    try{
-        var trackingUrl = "https://www.cacaushow.com.br/on/demandware.store/Sites-CacauShow-Site/pt_BR/__Analytics-Start";
-        var dwAnalytics = dw.__dwAnalytics.getTracker(trackingUrl);
-        if (typeof dw.ac == "undefined") {
-            dwAnalytics.trackPageView();
-        } else {
-            dw.ac.setDWAnalytics(dwAnalytics);
-        }
-    }catch(err) {};
-}
-/* ]]> */
-// -->
-</script>
-<script type="text/javascript" src="js/dwanalytics-22.2.js" async="async" onload="trackPage()"></script>
-<!-- Demandware Active Data (body_end-active_data.js) -->
-<script src="js/dwac-21.7.js" type="text/javascript" async="async"></script><!-- CQuotient Activity Tracking (body_end-cquotient.js) -->
 <script src="js/gretel.min.js" type="text/javascript" async="async"></script>
 
 
