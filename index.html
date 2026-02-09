@@ -340,8 +340,8 @@ window.SitePreferences = {"postalCodesBR":"{\"postalCodesBR\":[\n{\"state\":\"ac
 
 /* Ajustes para mobile - produtos maiores próximos às bordas */
 @media (max-width: 768px) {
-    /* Reduz padding do container no mobile */
-    .container[style*="padding"] {
+    /* Reduz padding do container no mobile - sobrescreve estilo inline */
+    body .container {
         padding-left: 8px !important;
         padding-right: 8px !important;
         padding-top: 20px !important;
@@ -349,25 +349,48 @@ window.SitePreferences = {"postalCodesBR":"{\"postalCodesBR\":[\n{\"state\":\"ac
     }
     
     /* Remove max-width dos produtos no mobile para ocupar mais espaço */
-    .col-10[style*="max-width"] {
+    body div.col-md-3.col-sm-5.col-10 {
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Força largura total para col-10 no mobile */
+    body .row .col-10 {
         max-width: 100% !important;
         flex: 0 0 100% !important;
         width: 100% !important;
     }
     
     /* Reduz padding interno dos cards no mobile */
-    .product-card > div:first-child {
+    body .product-card > div:first-child {
         padding: 8px !important;
     }
     
-    .product-card > div:last-child {
+    body .product-card > div:last-child {
         padding: 10px !important;
     }
     
     /* Reduz row gap no mobile */
-    .row[style*="row-gap"] {
+    body .row {
         row-gap: 20px !important;
         column-gap: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Remove justify-content-center no mobile para produtos ficarem nas bordas */
+    body .row.justify-content-center {
+        justify-content: flex-start !important;
+    }
+    
+    /* Remove padding padrão do Bootstrap container no mobile */
+    body .container-fluid,
+    body .container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
     }
 }
 </style>
@@ -1559,6 +1582,48 @@ Alterar
     </div>
     
     <script>
+    // Ajustar produtos no mobile para ficarem maiores próximos às bordas
+    function adjustProductsForMobile() {
+        if (window.innerWidth <= 768) {
+            // Ajustar container
+            var container = document.querySelector('.container[style*="padding: 40px"]');
+            if (container) {
+                container.style.paddingLeft = '8px';
+                container.style.paddingRight = '8px';
+                container.style.paddingTop = '20px';
+                container.style.paddingBottom = '20px';
+            }
+            
+            // Ajustar produtos
+            var products = document.querySelectorAll('.col-md-3.col-sm-5.col-10');
+            products.forEach(function(product) {
+                product.style.maxWidth = '100%';
+                product.style.flex = '0 0 100%';
+                product.style.width = '100%';
+                product.style.marginLeft = '0';
+                product.style.marginRight = '0';
+            });
+            
+            // Ajustar row
+            var row = document.querySelector('#products-row');
+            if (row) {
+                row.style.rowGap = '20px';
+                row.style.columnGap = '0';
+                row.style.marginLeft = '0';
+                row.style.marginRight = '0';
+                row.style.justifyContent = 'flex-start';
+            }
+        }
+    }
+    
+    // Executar ao carregar e ao redimensionar
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', adjustProductsForMobile);
+    } else {
+        adjustProductsForMobile();
+    }
+    window.addEventListener('resize', adjustProductsForMobile);
+    
     function increaseQty(btn) {
         var qtyElement = btn.parentElement.querySelector('.product-qty');
         var currentQty = parseInt(qtyElement.textContent) || 1;
