@@ -411,10 +411,16 @@ function copiarPixCode() {
 var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
 
-// Função para chamar API através do Supabase (proxy CORS)
+// Função para chamar API através do Supabase (proxy CORS) com fallback
 function chamarAPIViaSupabase(endpoint, method, data) {
     var url = SUPABASE_URL + '/functions/v1/pix-proxy';
     
+    console.log('Chamando Supabase Edge Function:', url);
+    console.log('Endpoint destino:', endpoint);
+    console.log('Method:', method);
+    console.log('Data:', data);
+    
+    // Tentar chamar Supabase primeiro
     return fetch(url, {
         method: 'POST',
         headers: {
@@ -427,7 +433,50 @@ function chamarAPIViaSupabase(endpoint, method, data) {
             method: method,
             data: data
         })
+    })
+    .then(response => {
+        console.log('Resposta do Supabase - Status:', response.status);
+        console.log('Resposta do Supabase - Headers:', response.headers);
+        return response;
+    })
+    .catch(error => {
+        console.error('Erro ao chamar Supabase, tentando fallback:', error);
+        // Fallback: usar proxy CORS público
+        return chamarAPIViaProxyPublico(endpoint, method, data);
     });
+}
+
+// Função fallback usando proxy CORS público
+function chamarAPIViaProxyPublico(endpoint, method, data) {
+    console.log('Usando proxy CORS público como fallback');
+    
+    // Usar corsproxy.org como fallback
+    var proxyUrl = 'https://corsproxy.org/?';
+    var finalUrl = proxyUrl + encodeURIComponent(endpoint);
+    
+    var fetchOptions = {
+        method: method || 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    if (data && (method === 'POST' || method === 'PUT')) {
+        fetchOptions.body = JSON.stringify(data);
+    }
+    
+    return fetch(finalUrl, fetchOptions)
+        .then(response => {
+            console.log('Resposta do proxy público - Status:', response.status);
+            if (!response.ok) {
+                throw new Error('Erro na requisição: ' + response.status);
+            }
+            return response;
+        })
+        .catch(error => {
+            console.error('Erro no proxy público:', error);
+            throw error;
+        });
 }
 
 // Função para verificar status do PIX

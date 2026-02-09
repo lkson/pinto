@@ -28,6 +28,7 @@ serve(async (req) => {
 
   try {
     console.log('Processando requisição POST')
+    
     // Verificar se há corpo na requisição
     let requestData = null
     try {
