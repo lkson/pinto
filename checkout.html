@@ -1133,6 +1133,13 @@ function gerarPIX(formData, cart, total) {
 document.getElementById('checkout-form').addEventListener('submit', function(e) {
     e.preventDefault();
     
+    // CONTROLE DE DUPLICAÇÃO: Verificar se já existe requisição em andamento
+    if (pixRequestInProgress) {
+        console.warn('Requisição PIX já em andamento. Aguarde...');
+        alert('Uma requisição de pagamento já está em andamento. Aguarde...');
+        return;
+    }
+    
     var formData = {
         nome: document.getElementById('nome').value,
         email: document.getElementById('email').value,
