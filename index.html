@@ -1198,6 +1198,51 @@ Alterar
 
     <div class="container" style="padding: 40px 0;">
         <div class="row justify-content-center" style="row-gap: 30px; column-gap: 10px;" id="products-row">
+            <!-- Produto DESTAQUE: Harry Potter -->
+            <div class="col-md-3 col-sm-5 col-10" style="max-width: 280px; min-height: 450px;">
+                <a href="../produto 4/index.html" class="product-card" style="display: block; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; position: relative; cursor: pointer; text-decoration: none; color: inherit; height: 100%; border: 2px solid #00A859;" data-allow-redirect="true">
+                    <div style="position: absolute; top: 8px; left: 8px; background: #FF6B00; color: white; padding: 4px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 3px;">
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5L6 0Z" fill="white"/>
+                        </svg>
+                        DESTAQUE
+                    </div>
+                    <div style="position: absolute; top: 8px; right: 8px; z-index: 10;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </div>
+                    <div style="padding: 12px; text-align: center; background: #f8f8f8;">
+                        <img src="produto 4/images/1003996_1.png" alt="Tablete ao Leite Pelúcia Chapéu Seletor Harry Potter 160g" style="max-width: 100%; height: auto; max-height: 180px; object-fit: contain;">
+                    </div>
+                    <div style="padding: 12px;">
+                        <h3 style="font-size: 13px; font-weight: 600; color: #333; margin: 0 0 8px 0; line-height: 1.3; min-height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Tablete ao Leite Pelúcia Chapéu Seletor Harry Potter 160g</h3>
+                        <div style="display: inline-block; background: #D10244; color: white; padding: 3px 8px; border-radius: 10px; font-size: 9px; margin-bottom: 10px;">
+                            <span style="margin-right: 3px;">*</span> 7 CACAUS
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="color: #999; text-decoration: line-through; font-size: 11px; margin-bottom: 3px;">R$ 134,99</div>
+                            <div style="display: flex; align-items: baseline; gap: 6px;">
+                                <span style="font-size: 20px; font-weight: bold; color: #333;">R$ 53,99</span>
+                                <span style="font-size: 12px; color: #666;">/un</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                            <button type="button" style="width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); decreaseQty(this); return false;">-</button>
+                            <span style="font-size: 16px; font-weight: 600; min-width: 25px; text-align: center;" class="product-qty">1</span>
+                            <button type="button" style="width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); increaseQty(this); return false;">+</button>
+                        </div>
+                        <button type="button" style="width: 100%; background: #00A859; color: white; border: none; padding: 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; text-transform: uppercase;" onclick="return addProductToCart(this);">
+                            ADICIONAR AO CARRINHO
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 7H15L14 12H6L5 7Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 15H8M13 15H14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </a>
+            </div>
+            
             <!-- Produto 1: Batman -->
             <div class="col-md-3 col-sm-5 col-10" style="max-width: 280px; min-height: 450px;">
                 <a href="../produto/index.html" class="product-card" style="display: block; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; position: relative; cursor: pointer; text-decoration: none; color: inherit; height: 100%;" data-allow-redirect="true">
@@ -1314,51 +1359,6 @@ Alterar
                             <div style="color: #999; text-decoration: line-through; font-size: 11px; margin-bottom: 3px;">R$ 194,99</div>
                             <div style="display: flex; align-items: baseline; gap: 6px;">
                                 <span style="font-size: 20px; font-weight: bold; color: #333;">R$ 77,99</span>
-                                <span style="font-size: 12px; color: #666;">/un</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                            <button type="button" style="width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); decreaseQty(this); return false;">-</button>
-                            <span style="font-size: 16px; font-weight: 600; min-width: 25px; text-align: center;" class="product-qty">1</span>
-                            <button type="button" style="width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); increaseQty(this); return false;">+</button>
-                        </div>
-                        <button type="button" style="width: 100%; background: #00A859; color: white; border: none; padding: 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; text-transform: uppercase;" onclick="return addProductToCart(this);">
-                            ADICIONAR AO CARRINHO
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5 7H15L14 12H6L5 7Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M7 15H8M13 15H14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                </a>
-            </div>
-            
-            <!-- Produto 4: Harry Potter -->
-            <div class="col-md-3 col-sm-5 col-10" style="max-width: 280px; min-height: 450px;">
-                <a href="../produto 4/index.html" class="product-card" style="display: block; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; position: relative; cursor: pointer; text-decoration: none; color: inherit; height: 100%;" data-allow-redirect="true">
-                    <div style="position: absolute; top: 8px; left: 8px; background: #0066CC; color: white; padding: 4px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; z-index: 10; display: flex; align-items: center; gap: 3px;">
-                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5L6 0Z" fill="white"/>
-                        </svg>
-                        PRÉ-VENDA
-                    </div>
-                    <div style="position: absolute; top: 8px; right: 8px; z-index: 10;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                    </div>
-                    <div style="padding: 12px; text-align: center; background: #f8f8f8;">
-                        <img src="produto 4/images/1003996_1.png" alt="Tablete ao Leite Pelúcia Chapéu Seletor Harry Potter 160g" style="max-width: 100%; height: auto; max-height: 180px; object-fit: contain;">
-                    </div>
-                    <div style="padding: 12px;">
-                        <h3 style="font-size: 13px; font-weight: 600; color: #333; margin: 0 0 8px 0; line-height: 1.3; min-height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Tablete ao Leite Pelúcia Chapéu Seletor Harry Potter 160g</h3>
-                        <div style="display: inline-block; background: #D10244; color: white; padding: 3px 8px; border-radius: 10px; font-size: 9px; margin-bottom: 10px;">
-                            <span style="margin-right: 3px;">*</span> 7 CACAUS
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <div style="color: #999; text-decoration: line-through; font-size: 11px; margin-bottom: 3px;">R$ 134,99</div>
-                            <div style="display: flex; align-items: baseline; gap: 6px;">
-                                <span style="font-size: 20px; font-weight: bold; color: #333;">R$ 53,99</span>
                                 <span style="font-size: 12px; color: #666;">/un</span>
                             </div>
                         </div>
