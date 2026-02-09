@@ -80,13 +80,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 .pix-code {
     font-family: 'Courier New', monospace;
-    font-size: 12px;
+    font-size: 13px;
     color: #333;
     word-break: break-all;
     line-height: 1.6;
     margin: 10px 0;
     padding: 15px;
     background: white;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    max-height: 60px;
+    overflow: hidden;
     border-radius: 4px;
     border: 1px solid #ddd;
 }
@@ -322,6 +326,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                                     <div class="pix-code-container">
                                         <p style="font-weight: 600; margin-bottom: 10px; color: #333;">Código PIX (Copiar e Colar):</p>
                                         <div class="pix-code" id="pix-code-text"></div>
+                                        <div id="pix-code-full" style="display: none;"></div>
                                         <button class="btn-copy-pix" id="btn-copy-pix" onclick="copiarPixCode()">
                                             <i class="fa fa-copy"></i>
                                             <span id="copy-text">Copiar Código PIX</span>
@@ -395,7 +400,9 @@ function formatPrice(price) {
 
 // Função para copiar código PIX
 function copiarPixCode() {
-    var pixCode = document.getElementById('pix-code-text').textContent;
+    // Pegar o código completo do campo oculto
+    var pixCodeFull = document.getElementById('pix-code-full').textContent;
+    var pixCode = pixCodeFull || document.getElementById('pix-code-text').textContent;
     var btnCopy = document.getElementById('btn-copy-pix');
     var copyText = document.getElementById('copy-text');
     
@@ -682,8 +689,18 @@ window.addEventListener('DOMContentLoaded', function() {
         total += item.price * item.quantity;
     });
     
-    // Exibir código PIX
-    document.getElementById('pix-code-text').textContent = pixCode;
+    // Exibir código PIX (mostrar apenas parte para economizar espaço)
+    // Salvar código completo em campo oculto
+    document.getElementById('pix-code-full').textContent = pixCode;
+    
+    // Mostrar apenas parte do código (primeiros 30 e últimos 30 caracteres)
+    var pixCodeDisplay = '';
+    if (pixCode && pixCode.length > 60) {
+        pixCodeDisplay = pixCode.substring(0, 30) + '...' + pixCode.substring(pixCode.length - 30);
+    } else {
+        pixCodeDisplay = pixCode;
+    }
+    document.getElementById('pix-code-text').textContent = pixCodeDisplay;
     document.getElementById('pix-amount').textContent = formatPrice(total);
     
     // Gerar QR Code
