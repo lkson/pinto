@@ -518,19 +518,30 @@ function chamarAPIViaSupabase(endpoint, method, data) {
     console.log('Data:', data);
     
     // Tentar chamar Supabase primeiro
-    return fetch(url, {
+    // Primeiro tenta sem autenticação (se a função for pública)
+    var headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    // Adicionar autenticação apenas se SUPABASE_KEY estiver disponível
+    // Mas primeiro tenta sem auth para funções públicas
+    var fetchOptions = {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'apikey': SUPABASE_KEY
-        },
+        headers: headers,
         body: JSON.stringify({
             endpoint: endpoint,
             method: method,
             data: data
         })
-    })
+    };
+    
+    // Se SUPABASE_KEY estiver disponível, adicionar headers de auth
+    if (SUPABASE_KEY) {
+        headers['Authorization'] = 'Bearer ' + SUPABASE_KEY;
+        headers['apikey'] = SUPABASE_KEY;
+    }
+    
+    return fetch(url, fetchOptions)
     .then(function(response) {
         console.log('Resposta do Supabase - Status:', response.status);
         console.log('Resposta do Supabase - OK:', response.ok);
