@@ -32,8 +32,8 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "https://pinto-eight.vercel.app"
-additional_redirect_urls = ["https://pinto-eight.vercel.app"]
+site_url = "https://cacauloversclub.vercel.app"
+additional_redirect_urls = ["https://cacauloversclub.vercel.app", "https://cacaulovers.club", "https://www.cacaulovers.club"]
 jwt_expiry = 3600
 enable_signup = true
 
