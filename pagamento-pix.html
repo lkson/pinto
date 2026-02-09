@@ -531,21 +531,50 @@ function chamarAPIViaSupabase(endpoint, method, data) {
             data: data
         })
     })
-    .then(response => {
+    .then(function(response) {
         console.log('Resposta do Supabase - Status:', response.status);
-        console.log('Resposta do Supabase - Headers:', response.headers);
+        console.log('Resposta do Supabase - OK:', response.ok);
         
-        // Se retornar 405 (Method Not Allowed) ou qualquer erro, usar fallback
-        if (response.status === 405 || !response.ok) {
-            console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
+        // Se retornar erro, tentar parsear o erro primeiro
+        if (!response.ok) {
+            return response.text().then(function(text) {
+                console.error('Erro do Supabase:', text);
+                var errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch (e) {
+                    errorData = { error: text || 'Erro desconhecido' };
+                }
+                
+                // Se for erro 405 ou 404, a função pode não estar deployada
+                if (response.status === 405 || response.status === 404) {
+                    throw new Error('Supabase Edge Function não encontrada ou não configurada. Status: ' + response.status + '. Verifique se a função smooth-endpoint está deployada.');
+                }
+                
+                // Para outros erros, tentar fallback
+                console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
+                return chamarAPIViaProxyPublico(endpoint, method, data);
+            });
+        }
+        
+        // Se OK, retornar a resposta
+        return response;
+    })
+    .catch(function(error) {
+        console.error('Erro ao chamar Supabase:', error);
+        
+        // Se for erro de rede ou CORS, tentar fallback
+        if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('CORS'))) {
+            console.warn('Erro de rede/CORS ao chamar Supabase, tentando fallback');
             return chamarAPIViaProxyPublico(endpoint, method, data);
         }
         
-        return response;
-    })
-    .catch(error => {
-        console.error('Erro ao chamar Supabase, tentando fallback:', error);
-        // Fallback: usar proxy CORS público
+        // Se for erro específico da função não encontrada, não tentar fallback
+        if (error.message && error.message.includes('Edge Function não encontrada')) {
+            throw error; // Propagar o erro para mostrar mensagem específica
+        }
+        
+        // Para outros erros, tentar fallback
         return chamarAPIViaProxyPublico(endpoint, method, data);
     });
 }
@@ -652,45 +681,60 @@ function verificarStatusPIX() {
         // Usar a URL encriptada carregada dinamicamente
         var apiUrl = DUTTYFY_PIX_URL_ENCRIPTADA + '?transactionId=' + transactionId;
     
-        // Chamar API através do Supabase
-        chamarAPIViaSupabase(apiUrl, 'GET', null)
-            .then(response => {
+        // Aguardar credenciais e chamar API através do Supabase
+        carregarCredenciais().then(function() {
+            if (!DUTTYFY_PIX_URL_ENCRIPTADA) {
+                console.error('Credenciais não carregadas');
+                return;
+            }
+            
+            return chamarAPIViaSupabase(apiUrl, 'GET', null);
+        })
+        .then(function(response) {
+            if (!response) return;
+            
+            // Verificar se é uma Response do fetch ou já é um objeto
+            if (response instanceof Response) {
                 if (!response.ok) {
-                    return response.json().then(err => {
+                    return response.json().then(function(err) {
                         console.error('Erro ao verificar status:', err.error || 'Erro na requisição');
                         return null;
                     });
                 }
                 return response.json();
-            })
-            .then(result => {
-                if (!result) return;
+            } else {
+                // Já é um objeto JSON
+                return Promise.resolve(response);
+            }
+        })
+        .then(function(result) {
+            if (!result) return;
+            
+            // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
+            var data = result.data || result;
+            
+            if (data.error) {
+                console.error('Erro ao verificar status:', data.error);
+                return;
+            }
+            
+            var statusDiv = document.getElementById('pix-status');
+            if (data.status === 'COMPLETED') {
+                statusDiv.className = 'pix-status completed';
+                statusDiv.innerHTML = '<i class="fa fa-check-circle"></i> Pagamento confirmado!';
+                clearInterval(window.pixStatusInterval);
+                document.getElementById('pix-timer').style.display = 'none';
                 
-                // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
-                var data = result.data || result;
-                
-                if (data.error) {
-                    console.error('Erro ao verificar status:', data.error);
-                    return;
-                }
-                
-                var statusDiv = document.getElementById('pix-status');
-                if (data.status === 'COMPLETED') {
-                    statusDiv.className = 'pix-status completed';
-                    statusDiv.innerHTML = '<i class="fa fa-check-circle"></i> Pagamento confirmado!';
-                    clearInterval(window.pixStatusInterval);
-                    document.getElementById('pix-timer').style.display = 'none';
-                    
-                    // Limpar carrinho após pagamento confirmado
-                    setTimeout(function() {
-                        localStorage.removeItem('cacaushow_cart');
-                        updateCartBadge();
-                    }, 2000);
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao verificar status do PIX:', error);
-            });
+                // Limpar carrinho após pagamento confirmado
+                setTimeout(function() {
+                    localStorage.removeItem('cacaushow_cart');
+                    updateCartBadge();
+                }, 2000);
+            }
+        })
+        .catch(function(error) {
+            console.error('Erro ao verificar status do PIX:', error);
+        });
     }).catch(function(error) {
         console.error('Erro ao carregar credenciais para verificar status:', error);
     });
