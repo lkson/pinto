@@ -337,6 +337,39 @@ window.SitePreferences = {"postalCodesBR":"{\"postalCodesBR\":[\n{\"state\":\"ac
     display: flex !important;
     flex-direction: column !important;
 }
+
+/* Ajustes para mobile - produtos maiores próximos às bordas */
+@media (max-width: 768px) {
+    /* Reduz padding do container no mobile */
+    .container[style*="padding"] {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
+    }
+    
+    /* Remove max-width dos produtos no mobile para ocupar mais espaço */
+    .col-10[style*="max-width"] {
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Reduz padding interno dos cards no mobile */
+    .product-card > div:first-child {
+        padding: 8px !important;
+    }
+    
+    .product-card > div:last-child {
+        padding: 10px !important;
+    }
+    
+    /* Reduz row gap no mobile */
+    .row[style*="row-gap"] {
+        row-gap: 20px !important;
+        column-gap: 0 !important;
+    }
+}
 </style>
 
 <link rel="stylesheet" href="css/skin.css">
@@ -1125,7 +1158,7 @@ Alterar
 
 
     <div class="container" style="padding: 40px 0;">
-        <div class="row justify-content-center" style="row-gap: 30px; column-gap: 10px;">
+        <div class="row justify-content-center" style="row-gap: 30px; column-gap: 10px;" id="products-row">
             <!-- Produto 1: Batman -->
             <div class="col-md-3 col-sm-5 col-10" style="max-width: 280px; min-height: 450px;">
                 <a href="../produto/index.html" class="product-card" style="display: block; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; position: relative; cursor: pointer; text-decoration: none; color: inherit; height: 100%;" data-allow-redirect="true">
