@@ -629,6 +629,9 @@ function buscarCEP() {
             document.getElementById('cidade').value = data.localidade || '';
             document.getElementById('estado').value = data.uf || '';
             
+            // Atualizar resumo do pedido para mostrar frete grátis
+            loadCartSummary();
+            
             // Focar no campo número após preencher
             document.getElementById('numero').focus();
         })
@@ -655,6 +658,19 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', carregarLocalizacaoSalva);
 } else {
     carregarLocalizacaoSalva();
+}
+
+// Função para verificar se o endereço está preenchido
+function isEnderecoPreenchido() {
+    var cep = document.getElementById('cep') ? document.getElementById('cep').value.replace(/\D/g, '') : '';
+    var rua = document.getElementById('rua') ? document.getElementById('rua').value.trim() : '';
+    var numero = document.getElementById('numero') ? document.getElementById('numero').value.trim() : '';
+    var bairro = document.getElementById('bairro') ? document.getElementById('bairro').value.trim() : '';
+    var cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+    var estado = document.getElementById('estado') ? document.getElementById('estado').value.trim() : '';
+    
+    // Considera preenchido se tiver CEP válido (8 dígitos) e pelo menos rua e cidade
+    return cep.length === 8 && rua.length > 0 && cidade.length > 0;
 }
 
 // Carregar resumo do carrinho
@@ -685,6 +701,19 @@ function loadCartSummary() {
     html += '</div>';
     
     html += '<div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #ddd;">';
+    
+    // Verificar se o endereço está preenchido para mostrar frete grátis
+    var enderecoPreenchido = isEnderecoPreenchido();
+    if (enderecoPreenchido) {
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 12px; background: #e8f5e9; border-radius: 6px; border: 1px solid #c8e6c9;">';
+        html += '<span style="font-size: 14px; font-weight: 600; color: #2e7d32; display: flex; align-items: center; gap: 6px;">';
+        html += '<i class="fa fa-truck" style="font-size: 16px;"></i>';
+        html += 'Frete Grátis';
+        html += '</span>';
+        html += '<span style="font-size: 14px; font-weight: 600; color: #2e7d32;">R$ 0,00</span>';
+        html += '</div>';
+    }
+    
     html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">';
     html += '<span style="font-size: 18px; font-weight: 600; color: #333;">Total:</span>';
     html += '<span style="font-size: 24px; font-weight: bold; color: #00A859;">R$ ' + total.toFixed(2).replace('.', ',') + '</span>';
@@ -707,6 +736,23 @@ function updateCartBadge() {
 // Carregar resumo ao carregar a página
 loadCartSummary();
 updateCartBadge();
+
+// Adicionar listeners para atualizar resumo quando endereço for preenchido
+var camposEndereco = ['cep', 'rua', 'numero', 'bairro', 'cidade', 'estado'];
+camposEndereco.forEach(function(campoId) {
+    var campo = document.getElementById(campoId);
+    if (campo) {
+        campo.addEventListener('input', function() {
+            // Atualizar resumo após um pequeno delay para evitar muitas atualizações
+            setTimeout(function() {
+                loadCartSummary();
+            }, 300);
+        });
+        campo.addEventListener('change', function() {
+            loadCartSummary();
+        });
+    }
+});
 
 // Função para validar CPF
 function validarCPF(cpf) {
