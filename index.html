@@ -342,11 +342,93 @@ body {
     background-color: #E7E0D8 !important;
     min-height: 100vh;
 }
+
+/* Pop-up imagem ao entrar na página */
+.popup-imagem-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+.popup-imagem-overlay.ativo {
+    opacity: 1;
+    visibility: visible;
+}
+.popup-imagem-container {
+    position: relative;
+    max-width: 90%;
+    max-height: 90vh;
+}
+.popup-imagem-container img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    display: block;
+}
+.popup-imagem-fechar {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #333;
+    color: #fff;
+    border: 2px solid #fff;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.popup-imagem-fechar:hover {
+    background: #555;
+}
 </style>
 
 <link rel="stylesheet" href="css/skin.css">
 
 </head><body class="" data-current-store="null"><input type="hidden" class="js-cart-abandonment-settings" data-is-enabled="true">
+
+<!-- Pop-up imagem - exibido ao entrar na página -->
+<div class="popup-imagem-overlay" id="popupImagem">
+    <div class="popup-imagem-container">
+        <button class="popup-imagem-fechar" type="button" aria-label="Fechar pop-up">&times;</button>
+        <img src="POP-UP IMAGEM/pop-up imagem.png" alt="Promoção">
+    </div>
+</div>
+<script>
+(function() {
+    var overlay = document.getElementById('popupImagem');
+    var btnFechar = overlay.querySelector('.popup-imagem-fechar');
+    function fechar() {
+        overlay.classList.remove('ativo');
+    }
+    function abrir() {
+        overlay.classList.add('ativo');
+    }
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) fechar();
+    });
+    btnFechar.addEventListener('click', fechar);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', abrir);
+    } else {
+        abrir();
+    }
+})();
+</script>
 
 
 
