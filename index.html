@@ -1971,9 +1971,10 @@ Alterar
             <i class="fa fa-times"></i>
         </button>
         <a href="produto 4/index.html" class="harry-potter-banner-link">
-            <img src="banner/ChatGPT Image 10 de fev. de 2026, 09_23_25.png" 
+            <img src="banner/ChatGPT%20Image%2010%20de%20fev.%20de%202026,%2009_23_25.png" 
                  alt="Banner Promocional Harry Potter - 60% de Desconto e Frete Grátis" 
-                 class="harry-potter-banner-image">
+                 class="harry-potter-banner-image"
+                 onerror="this.onerror=null; this.src='banner/ChatGPT Image 10 de fev. de 2026, 09_23_25.png'; console.error('Erro ao carregar imagem do banner:', this.src);">
         </a>
     </div>
 </div>
@@ -2110,10 +2111,28 @@ Alterar
         setTimeout(function() {
             var bannerModal = document.getElementById('harry-potter-banner-modal');
             if (bannerModal) {
+                console.log('Exibindo banner Harry Potter');
                 bannerModal.style.display = 'flex';
                 document.body.style.overflow = 'hidden'; // Prevenir scroll do body
+                
+                // Verificar se a imagem carregou
+                var bannerImage = document.querySelector('.harry-potter-banner-image');
+                if (bannerImage) {
+                    bannerImage.onload = function() {
+                        console.log('Imagem do banner carregada com sucesso');
+                    };
+                    bannerImage.onerror = function() {
+                        console.error('Erro ao carregar imagem do banner. Tentando caminho alternativo...');
+                        // Tentar caminho sem codificação
+                        this.src = 'banner/ChatGPT Image 10 de fev. de 2026, 09_23_25.png';
+                    };
+                }
+            } else {
+                console.error('Elemento do banner não encontrado');
             }
         }, 500); // 500ms após carregar a página
+    } else {
+        console.log('Banner já foi fechado nesta sessão');
     }
     
     // Função para fechar o banner
