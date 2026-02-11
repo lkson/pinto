@@ -273,12 +273,12 @@ body {
     width: 256px !important;
 }
 
-/* Oculta elementos cinza abaixo do botão de adicionar ao carrinho */
+/* Oculta elementos cinza abaixo do botão de adicionar ao carrinho - mantém preço visível */
 .it_product__price_buybt__row .stripe-button,
 .it_product__price_buybt__row .stripe,
 .it_product-detail__outofstock,
 .cart-and-ipay .product-detail-is-loading,
-.it_product__price_buybt__row > *:not(.cart-and-ipay),
+.it_product__price_buybt__row.it_product__price_buybt > *:not(.cart-and-ipay),
 .cart-and-ipay > *:not(.it_product__tocart) {
     display: none !important;
 }
