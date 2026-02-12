@@ -286,23 +286,15 @@ select#estado option {
   defer
 ></script>
 
-<!-- Meta Pixel Code -->
+<!-- UTMify Pixel -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1460364472201292');
-fbq('track', 'PageView');
+  window.pixelId = "698dd52b67e261c525f910eb";
+  var a = document.createElement("script");
+  a.setAttribute("async", "");
+  a.setAttribute("defer", "");
+  a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+  document.head.appendChild(a);
 </script>
-<noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=1460364472201292&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
 
 </head><body>
 
@@ -733,9 +725,9 @@ function loadCartSummary() {
     var enderecoPreenchido = isEnderecoPreenchido();
     if (enderecoPreenchido) {
         html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 12px; background: #e8f5e9; border-radius: 6px; border: 1px solid #c8e6c9;">';
-        html += '<span style="font-size: 14px; font-weight: 600; color: #2e7d32; display: flex; align-items: center; gap: 6px;">';
-        html += '<i class="fa fa-truck" style="font-size: 16px;"></i>';
-        html += 'Frete Grátis';
+        html += '<span style="font-size: 14px; font-weight: 600; color: #2e7d32; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">';
+        html += '<span style="display: flex; align-items: center; gap: 6px;"><i class="fa fa-truck" style="font-size: 16px;"></i>Frete Grátis</span>';
+        html += '<span style="font-size: 12px; font-weight: 400; color: #1b5e20;">Prazo de entrega de 4 a 7 dias úteis</span>';
         html += '</span>';
         html += '<span style="font-size: 14px; font-weight: 600; color: #2e7d32;">R$ 0,00</span>';
         html += '</div>';

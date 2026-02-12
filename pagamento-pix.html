@@ -200,23 +200,15 @@ body {
   defer
 ></script>
 
-<!-- Meta Pixel Code -->
+<!-- UTMify Pixel -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1460364472201292');
-fbq('track', 'PageView');
+  window.pixelId = "698dd52b67e261c525f910eb";
+  var a = document.createElement("script");
+  a.setAttribute("async", "");
+  a.setAttribute("defer", "");
+  a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+  document.head.appendChild(a);
 </script>
-<noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=1460364472201292&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
 
 </head><body>
 
@@ -336,6 +328,10 @@ fbq('track', 'PageView');
                                     
                                     <div class="pix-status pending" id="pix-status">
                                         <i class="fa fa-clock-o"></i> Aguardando pagamento
+                                    </div>
+                                    
+                                    <div style="margin: 15px 0; padding: 12px 16px; background: #fff8e1; border: 1px solid #ffc107; border-radius: 6px; font-size: 12px; font-weight: 600; color: #5d4037; text-align: center;">
+                                        <i class="fa fa-exclamation-triangle" style="margin-right: 6px;"></i>CONFIRA SEMPRE O DESTINATÁRIO, NOSSO CANAL DE PAGAMENTOS OFICIAIS É MARKETPLACE PAGO OU PAGAFACIL. FELIZ PÁSCOA.
                                     </div>
                                     
                                     <div class="pix-timer" id="pix-timer"></div>
