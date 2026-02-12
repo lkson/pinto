@@ -296,6 +296,24 @@ select#estado option {
   document.head.appendChild(a);
 </script>
 
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1460364472201292');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1460364472201292&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
 </head><body>
 
 
@@ -508,7 +526,7 @@ select#estado option {
 
                                 <button type="submit" class="btn-checkout" id="btn-finalizar">
                                     <i class="fa fa-check"></i>
-                                    Finalizar Pedido
+                                    Finalizar Compra
                                 </button>
                             </form>
                         </div>
@@ -1152,7 +1170,7 @@ function gerarPIX(formData, cart, total) {
             // A resposta do Supabase pode vir dentro de um campo 'data' ou diretamente
             var data = result.data || result;
             btnFinalizar.disabled = false;
-            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
+            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
             
             if (data.error) {
                 alert('Erro ao gerar PIX: ' + data.error);
@@ -1177,7 +1195,7 @@ function gerarPIX(formData, cart, total) {
                 // Liberar flag de requisição em andamento
                 pixRequestInProgress = false;
                 btnFinalizar.disabled = false;
-                btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
+                btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
                 alert('Erro ao gerar código PIX. Por favor, tente novamente.');
             }
         })
@@ -1185,7 +1203,7 @@ function gerarPIX(formData, cart, total) {
             // Liberar flag de requisição em andamento em caso de erro
             pixRequestInProgress = false;
             btnFinalizar.disabled = false;
-            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
+            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
             console.error('Erro ao gerar PIX:', error);
             
             // Mensagem de erro mais específica
@@ -1199,7 +1217,7 @@ function gerarPIX(formData, cart, total) {
         });
     }).catch(function(error) {
         btnFinalizar.disabled = false;
-        btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Pedido';
+        btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
         console.error('Erro ao carregar credenciais:', error);
         alert('Erro ao carregar configurações. Por favor, recarregue a página.');
     });
