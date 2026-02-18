@@ -284,6 +284,17 @@ body {
 
 <link rel="stylesheet" href="css/skin.css">
 
+<style>
+/* Corrige botões cinzas - remove estado loading/disabled visual */
+.product-detail-is-loading,
+.customQtyInput.quantity-null { opacity: 1 !important; }
+.customQtyInput__container { background: #fff !important; border: 1px solid #ddd !important; }
+.customQtyInput__value { background: #fff !important; color: #333 !important; }
+.customQtyInput__button { background: #fff !important; color: #333 !important; opacity: 1 !important; }
+.customQtyInput__button.disabled { background: #fff !important; opacity: 1 !important; }
+.cacau-lovers { background: #8C222C !important; }
+</style>
+
 <!-- UTMify - Captura e repassa parâmetros UTM e subids -->
 <script
   src="https://cdn.utmify.com.br/scripts/utms/latest.js"
@@ -1750,11 +1761,11 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
 
 
     <div class="row d-sm-none footer__lessInfo">
-        Menos InformaÃ§Ãµes
+        Menos Informações
     </div>
 
     <div class="row d-sm-none footer__moreInfo">
-        Mais InformaÃ§Ãµes
+        Mais Informações
     </div>
 
 
@@ -1795,11 +1806,11 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
     
     
     <div class="content-asset"><!-- dwMarker="content" dwContentID="0efc7e4bc1fdf95585a0a440cf" -->
-        <p>PreÃ§os apresentados na loja virtual podem variar de acordo com a regiÃ£o. InformaÃ§Ãµes sobre preÃ§os, prazos de validade, estoque e origem podem ser obtidas diretamente nas lojas. Consulte a loja para verificar disponibilidade.</p>
+        <p>Preços apresentados na loja virtual podem variar de acordo com a região. Informações sobre preços, prazos de validade, estoque e origem podem ser obtidas diretamente nas lojas. Consulte a loja para verificar disponibilidade.</p>
 
 <p>.</p>
 
-<p>PreÃ§os, estoques, informaÃ§Ãµes e condiÃ§Ãµes disponÃ­veis no site estÃ£o sujeitos a alteraÃ§Ãµes sem aviso prÃ©vio. *PreÃ§os e produtos do Choco-Outlet sÃ£o vÃ¡lidos somente para compras realizadas na loja virtual sujeito a disponibilidade de estoque.</p>
+<p>Preços, estoques, informações e condições disponíveis no site estão sujeitos a alterações sem aviso prévio. *Preços e produtos do Choco-Outlet são válidos somente para compras realizadas na loja virtual sujeito a disponibilidade de estoque.</p>
     </div> <!-- End content-asset -->
 
 
@@ -1840,13 +1851,13 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
     
     
     <div class="content-asset"><!-- dwMarker="content" dwContentID="58285c918422623e4467907384" -->
-        <h3>PolÃ­ticas</h3>
+        <h3>Políticas</h3>
 
 <p><a href="https://www.cacaushow.com.br/terms.html">Termos de Uso</a></p>
 
-<p><a href="https://www.privacidade.com.br/portal-de-privacidade?token=e8d91724233537d3a44c65424e6b9ee7" target="_blank">PolÃ­tica de Privacidade</a></p>
+<p><a href="https://www.privacidade.com.br/portal-de-privacidade?token=e8d91724233537d3a44c65424e6b9ee7" target="_blank">Política de Privacidade</a></p>
 
-<p><a href="https://www.cacaushow.com.br/politica/returns.html">PolÃ­tica de Trocas</a></p>
+<p><a href="https://www.cacaushow.com.br/politica/returns.html">Política de Trocas</a></p>
 
 <p><a href="https://www.cacaushow.com.br/faqs.html">FAQ</a>.</p>
 
@@ -1998,7 +2009,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                             <label class="form-control-label" for="customer-postal-code">
                                 Cep
                             </label>
-                            <input type="text" class="form-control js-postal-code-format postal-code-input base-input" id="customer-postal-code" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Por favor inserir um codigo postal vÃ¡lido" required="" autocomplete="postal-code" autofocus="" name="dwfrm_storeUpdate_postalCode" aria-required="true" value="07753580" maxlength="9" minlength="8">
+                            <input type="text" class="form-control js-postal-code-format postal-code-input base-input" id="customer-postal-code" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Por favor inserir um codigo postal válido" required="" autocomplete="postal-code" autofocus="" name="dwfrm_storeUpdate_postalCode" aria-required="true" value="07753580" maxlength="9" minlength="8">
                             <div class="invalid-feedback" id="zipCode-error"></div>
                         </div>
 
@@ -2007,7 +2018,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                             <label class="form-control-label" for="customer-street-number">
                                 Número
                             </label>
-                            <input type="text" class="form-control postal-code-input base-input" id="customer-street-number" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo sÃ³ pode conter nÃºmeros." required="" name="dwfrm_storeUpdate_streetNumber" aria-required="true" value="" maxlength="50" pattern="[0-9]+" autocomplete="shipping address-number">
+                            <input type="text" class="form-control postal-code-input base-input" id="customer-street-number" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo só pode conter números." required="" name="dwfrm_storeUpdate_streetNumber" aria-required="true" value="" maxlength="50" pattern="[0-9]+" autocomplete="shipping address-number">
                             <div class="invalid-feedback" id="userNum-error"></div>
                         </div>
                     </div>
@@ -2045,7 +2056,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        Informe seu endereÃ§o
+                        Informe seu endereço
                     </h5>
                     <a href="javascript:void(0);" class="modal-close" data-dismiss="modal" aria-label="Fechar">
                         <img src="images/icon_modal_close.png" alt="Cacau Show">
@@ -2057,7 +2068,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                         <label class="form-control-label" for="customer-street">
                             Endereço
                         </label>
-                        <input type="text" class="form-control base-input" id="customer-street" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo sÃ³ pode conter nÃºmeros." required="" name="dwfrm_storeUpdate_customerAddress_street" aria-required="true" value="" maxlength="2147483647" autofocus="" autocomplete="shipping address1">
+                        <input type="text" class="form-control base-input" id="customer-street" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo só pode conter números." required="" name="dwfrm_storeUpdate_customerAddress_street" aria-required="true" value="" maxlength="2147483647" autofocus="" autocomplete="shipping address1">
                         <div class="invalid-feedback"></div>
                     </div>
 
@@ -2066,7 +2077,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                         <label class="form-control-label" for="customer-street-number">
                             Número
                         </label>
-                        <input type="text" class="form-control base-input" id="customer-street-number" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo sÃ³ pode conter nÃºmeros." required="" name="dwfrm_storeUpdate_streetNumber" aria-required="true" value="" maxlength="50" pattern="[0-9]+" autocomplete="shipping address-number">
+                        <input type="text" class="form-control base-input" id="customer-street-number" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Este campo só pode conter números." required="" name="dwfrm_storeUpdate_streetNumber" aria-required="true" value="" maxlength="50" pattern="[0-9]+" autocomplete="shipping address-number">
                         <div class="invalid-feedback" id="userNum-error"></div>
                     </div>
 
@@ -2093,7 +2104,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                         <label class="form-control-label" for="customer-postal-code">
                             Cep
                         </label>
-                        <input type="text" class="form-control js-postal-code-format base-input" id="customer-postal-code" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Por favor inserir um codigo postal vÃ¡lido" required="" autocomplete="postal-code" name="dwfrm_storeUpdate_postalCode" aria-required="true" value="07753580" maxlength="9" minlength="8" readonly="">
+                        <input type="text" class="form-control js-postal-code-format base-input" id="customer-postal-code" inputmode="numeric" data-missing-error="Por favor preencher o campo" data-pattern-mismatch="Por favor inserir um codigo postal válido" required="" autocomplete="postal-code" name="dwfrm_storeUpdate_postalCode" aria-required="true" value="07753580" maxlength="9" minlength="8" readonly="">
                         <div class="invalid-feedback" id="zipCode-error"></div>
                     </div>
 
@@ -2108,21 +2119,21 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                             
                                 <option id="AL" value="AL">Alagoas</option>
                             
-                                <option id="AP" value="AP">AmapÃ¡</option>
+                                <option id="AP" value="AP">Amapá</option>
                             
                                 <option id="AM" value="AM">Amazonas</option>
                             
                                 <option id="BA" value="BA">Bahia</option>
                             
-                                <option id="CE" value="CE">CearÃ¡</option>
+                                <option id="CE" value="CE">Ceará</option>
                             
                                 <option id="DF" value="DF">Distrito Federal</option>
                             
-                                <option id="ES" value="ES">EspÃ­rito Santo</option>
+                                <option id="ES" value="ES">Espírito Santo</option>
                             
-                                <option id="GO" value="GO">GoiÃ¡s</option>
+                                <option id="GO" value="GO">Goiás</option>
                             
-                                <option id="MA" value="MA">MaranhÃ£o</option>
+                                <option id="MA" value="MA">Maranhão</option>
                             
                                 <option id="MT" value="MT">Mato Grosso</option>
                             
@@ -2130,15 +2141,15 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                             
                                 <option id="MG" value="MG">Minas Gerais</option>
                             
-                                <option id="PA" value="PA">ParÃ¡</option>
+                                <option id="PA" value="PA">Pará</option>
                             
-                                <option id="PB" value="PB">ParaÃ­ba</option>
+                                <option id="PB" value="PB">Paraíba</option>
                             
-                                <option id="PR" value="PR">ParanÃ¡</option>
+                                <option id="PR" value="PR">Paraná</option>
                             
                                 <option id="PE" value="PE">Pernambuco</option>
                             
-                                <option id="PI" value="PI">PiauÃ­</option>
+                                <option id="PI" value="PI">Piauí</option>
                             
                                 <option id="RJ" value="RJ">Rio de Janeiro</option>
                             
@@ -2152,7 +2163,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
                             
                                 <option id="SC" value="SC">Santa Catarina</option>
                             
-                                <option id="SP" value="SP">SÃ£o Paulo</option>
+                                <option id="SP" value="SP">São Paulo</option>
                             
                                 <option id="SE" value="SE">Sergipe</option>
                             
@@ -2164,7 +2175,7 @@ Ideal para quem ama <strong>presentes</strong> fofos e especiais! A <strong>pel�
 
                 </div>
                 <div class="modal-footer">
-                    <p class="modal__error">Nenhuma loja encontrada para esse endereÃ§o.</p>
+                    <p class="modal__error">Nenhuma loja encontrada para esse endereço.</p>
                     <input type="hidden" name="csrf_token" value="bN1msOQmtKdTnY8R77SWt1Bd3h_YIS3_9FGMW6ASbxRLX-YT0UhdxYNqcCSk9BkkP0dURI2sz7gNDhc2vII-rq87M1X8IQHszG1GhWMr5WTPYuqcBmNZJzQaINj1ZafCcr9872ZEkCsoATskl4ZoyvZ-HJmJqlFKBjAezqEO3a1jkS7OijQ=">
                     <button type="submit" class="btn btn-primary">
                         Confirmar
