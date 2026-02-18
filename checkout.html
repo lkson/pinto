@@ -550,6 +550,15 @@ fbq('track', 'PageView');
 </div>
 
 <script>
+// Redireciona para o carrinho se estiver vazio
+(function() {
+    var cart = JSON.parse(localStorage.getItem('cacaushow_cart') || '[]');
+    if (cart.length === 0) {
+        window.location.replace('carrinho.html');
+        return;
+    }
+})();
+
 // Função para formatar CEP
 function formatCEP(value) {
     value = value.replace(/\D/g, '');

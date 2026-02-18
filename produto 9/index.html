@@ -1884,23 +1884,17 @@ function formatPrice(price) {
 }
 
 function addToCart(productId, productName, productPrice, productImage, quantity) {
-    var cart = getCart();
-    var existingItem = cart.find(function(item) { return item.id === productId; });
-    
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            id: productId,
-            name: productName,
-            price: productPrice,
-            image: productImage,
-            quantity: quantity
-        });
+    var item = { id: productId, name: productName, price: productPrice, image: productImage, quantity: quantity };
+    try {
+        var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(item))));
+        window.location.href = '../carrinho.html?add=' + encodeURIComponent(encoded);
+    } catch (e) {
+        var cart = getCart();
+        var existingItem = cart.find(function(i) { return i.id === productId; });
+        if (existingItem) existingItem.quantity += quantity; else cart.push(item);
+        saveCart(cart);
+        window.location.href = '../carrinho.html';
     }
-    
-    saveCart(cart);
-    window.location.href = '../carrinho.html';
 }
 
 function addProductToCartFromPDP(btn) {

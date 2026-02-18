@@ -1053,14 +1053,6 @@ function renderCart() {
     
     container.innerHTML = html;
     document.getElementById('cart-total').textContent = formatPrice(total);
-    
-    // Adicionar event listener ao botão de checkout
-    var checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', function() {
-            window.location.href = 'checkout.html';
-        });
-    }
 }
 
 function updateCartQty(productId, newQty) {
@@ -1088,6 +1080,11 @@ function setupCheckoutButton() {
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            var cart = getCart();
+            if (!cart || cart.length === 0) {
+                alert('Seu carrinho está vazio. Adicione produtos antes de finalizar a compra.');
+                return;
+            }
             window.location.href = 'checkout.html';
         });
     }
@@ -1109,15 +1106,38 @@ function carregarLocalizacaoSalva() {
     }
 }
 
+// Processa parâmetro ?add= (item vindo de páginas de produto em subpastas)
+function processAddFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var addParam = params.get('add');
+    if (addParam) {
+        try {
+            var jsonStr = decodeURIComponent(escape(atob(addParam)));
+            var item = JSON.parse(jsonStr);
+            var cart = getCart();
+            var existingItem = cart.find(function(i) { return i.id === item.id; });
+            if (existingItem) {
+                existingItem.quantity += (item.quantity || 1);
+            } else {
+                cart.push({ id: item.id, name: item.name, price: parseFloat(item.price), image: item.image, quantity: item.quantity || 1 });
+            }
+            saveCart(cart);
+            history.replaceState({}, '', window.location.pathname);
+        } catch (e) { console.warn('Erro ao processar add:', e); }
+    }
+}
+
 // Renderiza o carrinho ao carregar a página
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
+        processAddFromUrl();
         updateCartBadge();
         renderCart();
         setupCheckoutButton();
         carregarLocalizacaoSalva();
     });
 } else {
+    processAddFromUrl();
     updateCartBadge();
     renderCart();
     setupCheckoutButton();
