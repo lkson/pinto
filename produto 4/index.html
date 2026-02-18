@@ -1,11 +1,5 @@
 <!-- Include Page Designer Campaign Banner JavaScript and Styles only once here rather than at component level. --><!-- There should only be one Campagin Banner added on a PD page. Multiple Banners is unsupported at the moment. --><!DOCTYPE html><html lang="pt"><head>
 <meta charset="UTF-8">
-    <link rel="preload" href="https://www.googletagmanager.com/gtm.js?id=GTM-PQSFKTS" as="script">
-<link rel="preload" href="https://www.googletagmanager.com/gtag/js?id=G-TTZNN90HGX&l=dataLayer&cx=c" as="script">
-<link rel="preload" href="https://www.google-analytics.com/analytics.js" as="script">
-<link rel="preload" href="https://connect.facebook.net/en_US/fbevents.js" as="script">
-
-
 <!--[if gt IE 9]><!-->
 <script>//common/scripts.isml</script>
 <script defer="" type="text/javascript" src="js/main.js"></script>
@@ -113,95 +107,6 @@
 
 <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
 
-
-
-
-
-
-
-
-    
-
-
-    
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-PQSFKTS');</script>
-<!-- End Google Tag Manager -->
-
-    <script>
-  var storedUserId = sessionStorage.getItem('userId') || undefined,
-      pathName = window.location.pathname,
-      pageTypeByPathname = pathName.split('/')[1],
-      pageTypeDictionary = {
-    'home':'home',
-    'categoria':'category',
-    'produto':'product',
-    'busca':'internalsitesearch',
-    'carrinho':'cart',
-    'checkout':'checkout'
-  };
-
-if(!storedUserId){
-  fetch('/on/demandware.store/Sites-CacauShow-Site/default/Account-PageView')
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok fetching user id');
-    }
-    return response.json();
-  })
-  .then(data => {
-    sessionStorage.setItem('userId', data.userId)
-    pushPageView(data.userId);
-  })
-  .catch(error => {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'dataLayerError',
-                error: 'Data Layer Error: ' + error.message
-            });
-            pushPageView(storedUserId);
-  });
-} else {
-  pushPageView(storedUserId);
-}
-
-  function pushPageView(storedUserId) {
-    const currentPage = window.location.pathname
-    window.dataLayer = window.dataLayer || []
-    window.dataLayer.push({
-        'event': 'virtualPageView',
-        'currentPage': currentPage,
-        'pageType': pageTypeDictionary[pageTypeByPathname],
-        'pageTitle': document.title,
-        'previousPage': getPreviousPage(currentPage),
-        'userID': storedUserId || null,
-    });
-  }
-
-
-
-  function getPreviousPage(currentPage) {
-    const previousPage = window.sessionStorage.getItem('dataLayer/previousPage');
-    window.sessionStorage.setItem('dataLayer/previousPage', currentPage);
-    return previousPage;
-  }
-
-</script>
-
-
-
-
-
-
-
-
-
-
-
 <link rel="stylesheet" href="css/global.css">
 
     <link rel="stylesheet" href="css/detail.css">
@@ -225,11 +130,6 @@ if(!storedUserId){
 
 
     <meta name="google-site-verification" content="HV1li6dst_6LWYxjo7e_ada038iVt0t2L_nZE7TmS1Y">
-
-
-<meta name="facebook-domain-verification" content="52tht2pe7s2lmpwrlrz87cj928yooi">
-
-
 <script>
 (function(){
 window.Constants = {"AVAIL_STATUS_IN_STOCK":"IN_STOCK","AVAIL_STATUS_PREORDER":"PREORDER","AVAIL_STATUS_BACKORDER":"BACKORDER","AVAIL_STATUS_NOT_AVAILABLE":"NOT_AVAILABLE","PAYMENT_METHOD_ADYEN":"AdyenComponent","PAYMENT_METHOD_GIFT_CERTIFICATE":"GIFT_CERTIFICATE"};
@@ -347,176 +247,11 @@ fbq('track', 'PageView');
 
 <link rel="canonical" href="/produto/tablete-ao-leite-pel%C3%BAcia-chap%C3%A9u-seletor-harry-potter-160g-1003996.html">
 
-<script type="text/javascript">//<!--
-/* <![CDATA[ (head-active_data.js) */
-var dw = (window.dw || {});
-dw.ac = {
-    _analytics: null,
-    _events: [],
-    _category: "",
-    _searchData: "",
-    _anact: "",
-    _anact_nohit_tag: "",
-    _analytics_enabled: "true",
-    _timeZone: "Etc/GMT+3",
-    _capture: function(configs) {
-        if (Object.prototype.toString.call(configs) === "[object Array]") {
-            configs.forEach(captureObject);
-            return;
-        }
-        dw.ac._events.push(configs);
-    },
-	capture: function() { 
-		dw.ac._capture(arguments);
-		// send to CQ as well:
-		if (window.CQuotient) {
-			window.CQuotient.trackEventsFromAC(arguments);
-		}
-	},
-    EV_PRD_SEARCHHIT: "searchhit",
-    EV_PRD_DETAIL: "detail",
-    EV_PRD_RECOMMENDATION: "recommendation",
-    EV_PRD_SETPRODUCT: "setproduct",
-    applyContext: function(context) {
-        if (typeof context === "object" && context.hasOwnProperty("category")) {
-        	dw.ac._category = context.category;
-        }
-        if (typeof context === "object" && context.hasOwnProperty("searchData")) {
-        	dw.ac._searchData = context.searchData;
-        }
-    },
-    setDWAnalytics: function(analytics) {
-        dw.ac._analytics = analytics;
-    },
-    eventsIsEmpty: function() {
-        return 0 == dw.ac._events.length;
-    }
-};
-/* ]]> */
-// -->
-</script>
-<script type="text/javascript">//<!--
-/* <![CDATA[ (head-cquotient.js) */
-var CQuotient = window.CQuotient = {};
-CQuotient.clientId = 'bfjd-CacauShow';
-CQuotient.realm = 'BFJD';
-CQuotient.siteId = 'CacauShow';
-CQuotient.instanceType = 'prd';
-CQuotient.locale = 'pt_BR';
-CQuotient.fbPixelId = '__UNKNOWN__';
-CQuotient.activities = [];
-CQuotient.cqcid='';
-CQuotient.cquid='';
-CQuotient.cqeid='';
-CQuotient.cqlid='';
-CQuotient.apiHost='api.cquotient.com';
-/* Turn this on to test against Staging Einstein */
-/* CQuotient.useTest= true; */
-CQuotient.useTest = ('true' === 'false');
-CQuotient.initFromCookies = function () {
-	var ca = document.cookie.split(';');
-	for(var i=0;i < ca.length;i++) {
-	  var c = ca[i];
-	  while (c.charAt(0)==' ') c = c.substring(1,c.length);
-	  if (c.indexOf('cqcid=') == 0) {
-		CQuotient.cqcid=c.substring('cqcid='.length,c.length);
-	  } else if (c.indexOf('cquid=') == 0) {
-		  var value = c.substring('cquid='.length,c.length);
-		  if (value) {
-		  	var split_value = value.split("|", 3);
-		  	if (split_value.length > 0) {
-			  CQuotient.cquid=split_value[0];
-		  	}
-		  	if (split_value.length > 1) {
-			  CQuotient.cqeid=split_value[1];
-		  	}
-		  	if (split_value.length > 2) {
-			  CQuotient.cqlid=split_value[2];
-		  	}
-		  }
-	  }
-	}
-}
-CQuotient.getCQCookieId = function () {
-	if(window.CQuotient.cqcid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cqcid;
-};
-CQuotient.getCQUserId = function () {
-	if(window.CQuotient.cquid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cquid;
-};
-CQuotient.getCQHashedEmail = function () {
-	if(window.CQuotient.cqeid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cqeid;
-};
-CQuotient.getCQHashedLogin = function () {
-	if(window.CQuotient.cqlid == '')
-		window.CQuotient.initFromCookies();
-	return window.CQuotient.cqlid;
-};
-CQuotient.trackEventsFromAC = function (/* Object or Array */ events) {
-try {
-	if (Object.prototype.toString.call(events) === "[object Array]") {
-		events.forEach(_trackASingleCQEvent);
-	} else {
-		CQuotient._trackASingleCQEvent(events);
-	}
-} catch(err) {}
-};
-CQuotient._trackASingleCQEvent = function ( /* Object */ event) {
-	if (event && event.id) {
-		if (event.type === dw.ac.EV_PRD_DETAIL) {
-			CQuotient.trackViewProduct( {id:'', alt_id: event.id, type: 'raw_sku'} );
-		} // not handling the other dw.ac.* events currently
-	}
-};
-CQuotient.trackViewProduct = function(/* Object */ cqParamData){
-	var cq_params = {};
-	cq_params.cookieId = CQuotient.getCQCookieId();
-	cq_params.userId = CQuotient.getCQUserId();
-	cq_params.emailId = CQuotient.getCQHashedEmail();
-	cq_params.loginId = CQuotient.getCQHashedLogin();
-	cq_params.product = cqParamData.product;
-	cq_params.realm = cqParamData.realm;
-	cq_params.siteId = cqParamData.siteId;
-	cq_params.instanceType = cqParamData.instanceType;
-	cq_params.locale = CQuotient.locale;
-	
-	if(CQuotient.sendActivity) {
-		CQuotient.sendActivity(CQuotient.clientId, 'viewProduct', cq_params);
-	} else {
-		CQuotient.activities.push({activityType: 'viewProduct', parameters: cq_params});
-	}
-};
-/* ]]> */
-// -->
-</script>
 
 
-
-
-   <script type="application/ld+json">
+<script type="application/ld+json">
         {"@context":"http://schema.org/","@type":"Product","name":"Tablete ao Leite Pelúcia Chapéu Seletor Harry Potter 160g","description":"<p>Delicie-se com o <strong>tablete de chocolate ao leite</strong> estampado com o <strong>Brasão de Hogwarts</strong> e leve para casa uma <strong>pelúcia exclusiva do Chapéu Seletor</strong>.</p>","mpn":"1003996","sku":"1003996","brand":{"@type":"Thing","name":"Cacau Show"},"image":["https://www.cacaushow.com.br/on/demandware.static/-/Sites-masterCatalog_CacauShow/default/dwf71e1dca/large/1003996_1.png","https://www.cacaushow.com.br/on/demandware.static/-/Sites-masterCatalog_CacauShow/default/dw2bc1026c/large/1003996_1T.png"],"offers":{"url":{},"@type":"Offer","priceCurrency":"BRL","price":"149.99","availability":"http://schema.org/OutOfStock"}}
     </script>
-
-
-
-
-
-
-
-
-    
-
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQSFKTS" height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-
-
-
 <div class="page" data-action="null" data-querystring="null">
 <header class="it__header">
     
@@ -1153,42 +888,7 @@ Alterar
 </div>
 <div class="row">
 <div class="col-12"><div class="experience-component experience-dynamic-productDetail">
-
-
-
-
-
-
-<!-- CQuotient Activity Tracking (viewProduct-cquotient.js) -->
-<script type="text/javascript">//<!--
-/* <![CDATA[ */
-(function(){
-	try {
-		if(window.CQuotient) {
-			var cq_params = {};
-			cq_params.product = {
-					id: '1003996',
-					sku: '',
-					type: '',
-					alt_id: ''
-				};
-			cq_params.realm = "BFJD";
-			cq_params.siteId = "CacauShow";
-			cq_params.instanceType = "prd";
-			window.CQuotient.trackViewProduct(cq_params);
-		}
-	} catch(err) {}
-})();
-/* ]]> */
-// -->
-</script>
-<script type="text/javascript">//<!--
-/* <![CDATA[ (viewProduct-active_data.js) */
-dw.ac._capture({id: "1003996", type: "detail"});
-/* ]]> */
-// -->
-</script>
-    <div class="container product-detail product-wrapper it_product-detail" data-pid="1003996">
+<div class="container product-detail product-wrapper it_product-detail" data-pid="1003996">
         <div class="container-wrapper">
             <div class="it_product-detail__row">
                 <div class="row">
@@ -1313,33 +1013,8 @@ dw.ac._capture({id: "1003996", type: "detail"});
                     </div>
 
                     <div class="col-lg-6 col-12 d-flex flex-column pl-lg-4">
-                        <script>
-    function pushViewItem() {
-        try {
-            const event = JSON.parse('\u007b\"event\"\u003a\"view\u005fitem\"\u002c\"ecommerce\"\u003a\u007b\"items\"\u003a\u005b\u007b\"item\u005fid\"\u003a\"1003996\"\u002c\"item\u005fname\"\u003a\"Tablete\u0020ao\u0020Leite\u0020Pelúcia\u0020Chapéu\u0020Seletor\u0020Harry\u0020Potter\u0020160g\"\u002c\"item\u005fvariant\"\u003a\"standard\"\u002c\"price\"\u003a149\u002e99\u002c\"item\u005fcategory\"\u003a\"Campanhas\"\u002c\"item\u005fcategory1\"\u003a\"Pré\u002dVenda\u0020de\u0020Páscoa\"\u007d\u005d\u002c\"currency\"\u003a\"BRL\"\u002c\"value\"\u003a149\u002e99\u007d\u007d');
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push(event);
-        } catch (error) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'dataLayerError',
-                error: 'viewItem - pushViewItem: ' + error.message
-            });
-        }
-    }
-
-    try {
-                pushViewItem();
-    } catch (error) {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            event: 'dataLayerError',
-            error: 'viewItem - viewItemInterval: ' + error.message
-        });
-    }
-</script>
-
-                        <!-- Product Name -->
+                        
+<!-- Product Name -->
                         <div class="it_product-detail__name">
                             <h1 class="product-name">Tablete ao Leite Pelúcia Chapéu Seletor Harry Potter 160g</h1>
                         </div>
@@ -2169,31 +1844,6 @@ Com textura cremosa e o sabor clássico do <strong>chocolate ao leite</strong> <
         </form>
     </div>
 </div>
-
-
-<!-- Demandware Analytics code 1.0 (body_end-analytics-tracking-asynch.js) -->
-<script type="text/javascript">//<!--
-/* <![CDATA[ */
-function trackPage() {
-    try{
-        var trackingUrl = "https://www.cacaushow.com.br/on/demandware.store/Sites-CacauShow-Site/pt_BR/__Analytics-Start";
-        var dwAnalytics = dw.__dwAnalytics.getTracker(trackingUrl);
-        if (typeof dw.ac == "undefined") {
-            dwAnalytics.trackPageView();
-        } else {
-            dw.ac.setDWAnalytics(dwAnalytics);
-        }
-    }catch(err) {};
-}
-/* ]]> */
-// -->
-</script>
-<script type="text/javascript" src="js/dwanalytics-22.2.js" async="async" onload="trackPage()"></script>
-<!-- Demandware Active Data (body_end-active_data.js) -->
-<script src="js/dwac-21.7.js" type="text/javascript" async="async"></script><!-- CQuotient Activity Tracking (body_end-cquotient.js) -->
-<script src="js/gretel.min.js" type="text/javascript" async="async"></script>
-
-
 <script>
 // Sistema de Carrinho usando localStorage
 function getCart() {
