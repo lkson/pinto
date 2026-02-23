@@ -25,7 +25,7 @@ Após criar a função, configure os secrets (variáveis de ambiente):
 ### Secrets necessários:
 
 ```
-PIX_API_URL_ENCRIPTADA=https://www.pagamentos-seguros.app/api-pix/ObVzUOhxlLh4Mxcn3bWF6gRwM5r96EEJ3oe0psyE-LLgTYt6BQy-K9ge1KmCi1B5sr9HEr8zikcDeuAHNeNR4w
+PIX_API_URL_ENCRIPTADA=https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw
 ```
 
 **Opcional** (já tem valores padrão no código):

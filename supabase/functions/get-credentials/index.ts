@@ -43,7 +43,7 @@ serve(async (req) => {
     // Buscar credenciais dos secrets do Supabase
     // Esses valores devem ser configurados no Dashboard do Supabase
     const pixApiUrl = Deno.env.get('PIX_API_URL_ENCRIPTADA') || 
-                      'https://www.pagamentos-seguros.app/api-pix/ObVzUOhxlLh4Mxcn3bWF6gRwM5r96EEJ3oe0psyE-LLgTYt6BQy-K9ge1KmCi1B5sr9HEr8zikcDeuAHNeNR4w'
+                      'https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw'
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 
                         'https://xudfilvyvydckranlipn.supabase.co'

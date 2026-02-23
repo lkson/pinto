@@ -169,7 +169,7 @@ curl -X POST https://xudfilvyvydckranlipn.supabase.co/functions/v1/smooth-endpoi
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4" \
   -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4" \
   -d '{
-    "endpoint": "https://www.pagamentos-seguros.app/api-pix/ObVzUOhxlLh4Mxcn3bWF6gRwM5r96EEJ3oe0psyE-LLgTYt6BQy-K9ge1KmCi1B5sr9HEr8zikcDeuAHNeNR4w",
+    "endpoint": "https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw",
     "method": "POST",
     "data": {
       "amount": 100,
