@@ -475,67 +475,16 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // Se der 401 na smooth-endpoint: cole aqui a chave anon (Dashboard > Settings > API)
 var SUPABASE_ANON_KEY_OVERRIDE = '';
 
-// Variáveis globais para credenciais (serão carregadas da Edge Function)
-var SUPABASE_URL = null;
-var SUPABASE_KEY = null;
-var DUTTYFY_PIX_URL_ENCRIPTADA = null;
+// Credenciais fixas (não chama get-credentials; evita 405/400)
+var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
+var SUPABASE_KEY = SUPABASE_ANON_KEY;
+var DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw';
 
-// Função para carregar credenciais do Supabase de forma segura
 function carregarCredenciais() {
-    return new Promise(function(resolve, reject) {
-        // Verificar se já temos credenciais em cache (sessionStorage)
-        var credenciaisCache = sessionStorage.getItem('app_credentials');
-        if (credenciaisCache) {
-            try {
-                var credenciais = JSON.parse(credenciaisCache);
-                SUPABASE_URL = credenciais.supabaseUrl;
-                SUPABASE_KEY = credenciais.supabaseAnonKey;
-                DUTTYFY_PIX_URL_ENCRIPTADA = credenciais.pixApiUrl;
-                console.log('Credenciais carregadas do cache');
-                resolve(credenciais);
-                return;
-            } catch (e) {
-                console.warn('Erro ao parsear cache de credenciais:', e);
-            }
-        }
-        
-        // Buscar credenciais (GET; se 405, tenta POST)
-        var credUrl = SUPABASE_BASE_URL + '/functions/v1/get-credentials';
-        var credHeaders = { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
-        function fetchCreds(method) {
-            return fetch(credUrl, { method: method, headers: credHeaders, body: method === 'POST' ? '{}' : undefined })
-                .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('Erro ao buscar credenciais: ' + r.status)); });
-        }
-        fetchCreds('GET').catch(function(err) {
-            if (err.message.indexOf('405') !== -1) return fetchCreds('POST');
-            throw err;
-        })
-        .then(function(credenciais) {
-            // Armazenar credenciais nas variáveis globais
-            SUPABASE_URL = credenciais.supabaseUrl;
-            SUPABASE_KEY = credenciais.supabaseAnonKey;
-            DUTTYFY_PIX_URL_ENCRIPTADA = credenciais.pixApiUrl;
-            
-            // Cachear credenciais na sessão (válido por 1 hora)
-            sessionStorage.setItem('app_credentials', JSON.stringify(credenciais));
-            sessionStorage.setItem('app_credentials_timestamp', Date.now().toString());
-            
-            console.log('Credenciais carregadas com sucesso da Edge Function');
-            resolve(credenciais);
-        })
-        .catch(function(error) {
-            console.error('Erro ao carregar credenciais:', error);
-            // Fallback para valores padrão caso a função não esteja disponível
-            SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
-            SUPABASE_KEY = SUPABASE_ANON_KEY;
-            DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw';
-            console.warn('Usando credenciais de fallback');
-            resolve({
-                supabaseUrl: SUPABASE_URL,
-                supabaseAnonKey: SUPABASE_KEY,
-                pixApiUrl: DUTTYFY_PIX_URL_ENCRIPTADA
-            });
-        });
+    return Promise.resolve({
+        supabaseUrl: SUPABASE_URL,
+        supabaseAnonKey: SUPABASE_KEY,
+        pixApiUrl: DUTTYFY_PIX_URL_ENCRIPTADA
     });
 }
 
