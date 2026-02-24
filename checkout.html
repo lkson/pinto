@@ -863,20 +863,21 @@ function carregarCredenciais() {
             }
         }
         
-        // Buscar credenciais da Edge Function do Supabase (Supabase exige apikey/Authorization)
-        fetch(SUPABASE_BASE_URL + '/functions/v1/get-credentials', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-            }
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                throw new Error('Erro ao buscar credenciais: ' + response.status);
-            }
-            return response.json();
+        // Buscar credenciais da Edge Function (GET; se 405, tenta POST)
+        var credUrl = SUPABASE_BASE_URL + '/functions/v1/get-credentials';
+        var credHeaders = {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+        };
+        function fetchCreds(method) {
+            return fetch(credUrl, { method: method, headers: credHeaders, body: method === 'POST' ? '{}' : undefined })
+                .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('Erro ao buscar credenciais: ' + r.status)); });
+        }
+        fetchCreds('GET')
+        .catch(function(err) {
+            if (err.message.indexOf('405') !== -1) return fetchCreds('POST');
+            throw err;
         })
         .then(function(credenciais) {
             // Armazenar credenciais nas variáveis globais

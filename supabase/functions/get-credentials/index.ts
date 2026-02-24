@@ -13,12 +13,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
 }
 
 serve(async (req) => {
-  console.log('=== Edge Function get-credentials chamada ===')
+  console.log('=== Edge Function get-credentials chamada ===', req.method)
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -28,10 +28,10 @@ serve(async (req) => {
     })
   }
 
-  // Aceitar apenas GET
-  if (req.method !== 'GET') {
+  // Aceitar GET e POST (alguns gateways/proxies alteram o método)
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return new Response(
-      JSON.stringify({ error: 'Método não permitido. Use GET.' }),
+      JSON.stringify({ error: 'Método não permitido. Use GET ou POST.' }),
       { 
         status: 405,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
