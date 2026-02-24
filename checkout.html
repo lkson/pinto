@@ -834,6 +834,9 @@ function validarCPF(cpf) {
 // URL base do Supabase (pode ser pública)
 var SUPABASE_BASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 
+// Se der 401 "Chave API inválida": Supabase Dashboard > Settings > API > Project API keys > anon public (copie e cole abaixo)
+var SUPABASE_ANON_KEY_OVERRIDE = '';
+
 // Variáveis globais para credenciais (serão carregadas da Edge Function)
 var SUPABASE_URL = null;
 var SUPABASE_KEY = null;
@@ -905,8 +908,7 @@ carregarCredenciais();
 
 // Função para chamar API através do Supabase (proxy CORS) com fallback
 function chamarAPIViaSupabase(endpoint, method, data) {
-    // Garantir que temos as credenciais antes de fazer a chamada
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
+    if (!SUPABASE_URL) {
         return Promise.reject(new Error('Credenciais não carregadas. Aguarde o carregamento.'));
     }
     
@@ -915,77 +917,58 @@ function chamarAPIViaSupabase(endpoint, method, data) {
     console.log('Chamando Supabase Edge Function:', url);
     console.log('Endpoint destino:', endpoint);
     console.log('Method:', method);
-    console.log('Data:', data);
     
-    // Tentar chamar Supabase primeiro
-    // Primeiro tenta sem autenticação (se a função for pública)
-    var headers = {
-        'Content-Type': 'application/json'
-    };
+    var body = JSON.stringify({ endpoint: endpoint, method: method, data: data });
     
-    // Adicionar autenticação apenas se SUPABASE_KEY estiver disponível
-    // Mas primeiro tenta sem auth para funções públicas
-    var fetchOptions = {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({
-            endpoint: endpoint,
-            method: method,
-            data: data
-        })
-    };
-    
-    // Se SUPABASE_KEY estiver disponível, adicionar headers de auth
-    if (SUPABASE_KEY) {
-        headers['Authorization'] = 'Bearer ' + SUPABASE_KEY;
-        headers['apikey'] = SUPABASE_KEY;
+    function doFetch(useAuth) {
+        var headers = { 'Content-Type': 'application/json' };
+        var key = SUPABASE_ANON_KEY_OVERRIDE || SUPABASE_KEY;
+        if (useAuth && key) {
+            headers['Authorization'] = 'Bearer ' + key;
+            headers['apikey'] = key;
+        }
+        return fetch(url, { method: 'POST', headers: headers, body: body });
     }
     
-    return fetch(url, fetchOptions)
+    return doFetch(true)
     .then(function(response) {
         console.log('Resposta do Supabase - Status:', response.status);
         console.log('Resposta do Supabase - OK:', response.ok);
         
-        // Se retornar erro, tentar parsear o erro primeiro
-        if (!response.ok) {
-            return response.text().then(function(text) {
-                console.error('Erro do Supabase:', text);
-                var errorData;
-                try {
-                    errorData = JSON.parse(text);
-                } catch (e) {
-                    errorData = { error: text || 'Erro desconhecido' };
-                }
-                
-                // Se for erro 405 ou 404, a função pode não estar deployada
-                if (response.status === 405 || response.status === 404) {
-                    throw new Error('Supabase Edge Function não encontrada ou não configurada. Status: ' + response.status + '. Verifique se a função smooth-endpoint está deployada.');
-                }
-                
-                // Para outros erros, tentar fallback
-                console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
-                return chamarAPIViaProxyPublico(endpoint, method, data);
-            });
-        }
+        if (response.ok) return response;
         
-        // Se OK, retornar a resposta
-        return response;
+        return response.text().then(function(text) {
+            console.error('Erro do Supabase:', text);
+            var errorData;
+            try { errorData = JSON.parse(text); } catch (e) { errorData = { error: text }; }
+            
+            if (response.status === 405 || response.status === 404) {
+                throw new Error('Supabase Edge Function não encontrada ou não configurada. Status: ' + response.status + '. Verifique se a função smooth-endpoint está deployada.');
+            }
+            
+            // 401 Chave API inválida: tentar sem autenticação (função pode estar como pública)
+            if (response.status === 401) {
+                console.warn('401 recebido. Tentando chamar smooth-endpoint sem autenticação...');
+                return doFetch(false).then(function(retryResponse) {
+                    if (retryResponse.ok) return retryResponse;
+                    console.warn('Retry sem auth falhou (' + retryResponse.status + '), usando proxy');
+                    return chamarAPIViaProxyPublico(endpoint, method, data);
+                });
+            }
+            
+            console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
+            return chamarAPIViaProxyPublico(endpoint, method, data);
+        });
     })
     .catch(function(error) {
         console.error('Erro ao chamar Supabase:', error);
-        
-        // Se for erro de rede ou CORS, tentar fallback
         if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('CORS'))) {
-            console.warn('Erro de rede/CORS ao chamar Supabase, tentando fallback');
+            console.warn('Erro de rede/CORS, tentando fallback');
             return chamarAPIViaProxyPublico(endpoint, method, data);
         }
-        
-        // Se for erro específico da função não encontrada, não tentar fallback
         if (error.message && error.message.includes('Edge Function não encontrada')) {
-            throw error; // Propagar o erro para mostrar mensagem específica
+            throw error;
         }
-        
-        // Para outros erros, tentar fallback
         return chamarAPIViaProxyPublico(endpoint, method, data);
     });
 }
