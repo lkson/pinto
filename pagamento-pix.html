@@ -543,54 +543,36 @@ function carregarCredenciais() {
 // Carregar credenciais ao carregar a página
 carregarCredenciais();
 
-// Função para chamar API através do Supabase (proxy CORS) com fallback
+// Chama a API PIX: só usa Supabase se você colou a chave em SUPABASE_ANON_KEY_OVERRIDE; senão usa proxy (evita 401)
 function chamarAPIViaSupabase(endpoint, method, data) {
+    if (!SUPABASE_ANON_KEY_OVERRIDE) {
+        console.log('Usando proxy direto para a API PIX (sem 401)');
+        return chamarAPIViaProxyPublico(endpoint, method, data);
+    }
     if (!SUPABASE_URL) {
-        return Promise.reject(new Error('Credenciais não carregadas. Aguarde o carregamento.'));
+        return Promise.reject(new Error('Credenciais não carregadas.'));
     }
     
     var url = SUPABASE_URL + '/functions/v1/smooth-endpoint';
     var body = JSON.stringify({ endpoint: endpoint, method: method, data: data });
     
-    function doFetch(useAuth) {
-        var headers = { 'Content-Type': 'application/json' };
-        var key = SUPABASE_ANON_KEY_OVERRIDE || SUPABASE_KEY;
-        if (useAuth && key) {
-            headers['Authorization'] = 'Bearer ' + key;
-            headers['apikey'] = key;
-        }
-        return fetch(url, { method: 'POST', headers: headers, body: body });
-    }
-    
-    return doFetch(true)
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY_OVERRIDE,
+            'apikey': SUPABASE_ANON_KEY_OVERRIDE
+        },
+        body: body
+    })
     .then(function(response) {
-        console.log('Resposta do Supabase - Status:', response.status);
         if (response.ok) return response;
-        
-        return response.text().then(function(text) {
-            console.error('Erro do Supabase:', text);
-            if (response.status === 405 || response.status === 404) {
-                throw new Error('Supabase Edge Function não encontrada. Status: ' + response.status);
-            }
-            if (response.status === 401) {
-                console.warn('401 recebido. Tentando smooth-endpoint sem autenticação...');
-                return doFetch(false).then(function(retryResponse) {
-                    if (retryResponse.ok) return retryResponse;
-                    return chamarAPIViaProxyPublico(endpoint, method, data);
-                });
-            }
-            console.warn('Supabase retornou erro ' + response.status + ', usando fallback');
+        return response.text().then(function() {
             return chamarAPIViaProxyPublico(endpoint, method, data);
         });
     })
     .catch(function(error) {
-        console.error('Erro ao chamar Supabase:', error);
-        if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('CORS'))) {
-            return chamarAPIViaProxyPublico(endpoint, method, data);
-        }
-        if (error.message && error.message.includes('Edge Function não encontrada')) {
-            throw error;
-        }
+        console.warn('Erro ao chamar Supabase, usando proxy:', error.message);
         return chamarAPIViaProxyPublico(endpoint, method, data);
     });
 }

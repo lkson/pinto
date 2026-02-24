@@ -77,12 +77,19 @@ serve(async (req) => {
     console.log('Method:', method)
     console.log('Data:', JSON.stringify(data))
 
-    // Fazer a requisição para a API Duttyfy
+    // Chave API PIX: configurar no Supabase Dashboard > Edge Functions > smooth-endpoint > Secrets: PIX_API_KEY
+    const pixApiKey = Deno.env.get('PIX_API_KEY')
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (pixApiKey) {
+      headers['X-Api-Key'] = pixApiKey
+      headers['Authorization'] = 'Bearer ' + pixApiKey
+    }
+
     const fetchOptions: RequestInit = {
       method: method || 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
     }
 
     if (data && (method === 'POST' || method === 'PUT')) {
