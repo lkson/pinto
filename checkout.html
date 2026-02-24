@@ -921,7 +921,7 @@ function chamarAPIViaSupabase(endpoint, method, data) {
         return Promise.reject(new Error('Credenciais não carregadas.'));
     }
     
-    var url = SUPABASE_URL + '/functions/v1/smooth-endpoint';
+    var url = SUPABASE_URL + '/functions/v1/pix-proxy';
     var body = JSON.stringify({ endpoint: endpoint, method: method, data: data });
     
     console.log('Chamando Supabase Edge Function:', url);
