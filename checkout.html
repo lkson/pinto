@@ -888,7 +888,10 @@ function chamarAPIViaSupabase(endpoint, method, data, transactionId) {
             var msg = 'Proxy retornou ' + response.status + '.';
             try {
                 var errJson = JSON.parse(text);
-                if (errJson && errJson.error) msg = errJson.error;
+                if (errJson && errJson.error !== undefined) {
+                    var e = errJson.error;
+                    msg = (typeof e === 'string') ? e : (e && e.message) ? e.message : JSON.stringify(e);
+                }
             } catch (_) {}
             throw new Error(msg);
         });
@@ -1119,13 +1122,13 @@ function gerarPIX(formData, cart, total) {
             btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
             console.error('Erro ao gerar PIX:', error);
             
-            // Mensagem de erro mais específica (error.message pode ser string ou não)
+            // Mensagem de erro (sempre string; evitar [object Object])
             var errorMsg = 'Erro ao gerar PIX. ';
-            var msg = error && error.message;
-            if (typeof msg === 'string' && msg.length) {
+            var msg = (error && error.message);
+            if (typeof msg === 'string' && msg.length && msg !== '[object Object]') {
                 errorMsg += msg;
             } else {
-                errorMsg += 'Por favor, verifique se a Supabase Edge Function está configurada corretamente.';
+                errorMsg += 'Verifique os Secrets (INPAG_PUBLIC_KEY, INPAG_SECRET_KEY) no Supabase e o formato do payload.';
             }
             alert(errorMsg);
         });
