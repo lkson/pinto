@@ -1111,19 +1111,19 @@ function gerarPIX(formData, cart, total) {
     
     // Aguardar credenciais antes de continuar
     carregarCredenciais().then(function() {
-        // Preparar dados para a API
+        // Preparar dados para a API (documentação: amount e item.price em REAIS, não centavos)
         var cpfLimpo = formData.cpf.replace(/\D/g, '');
         var telefoneLimpo = formData.telefone.replace(/\D/g, '');
-        var valorCentavos = Math.round(total * 100); // Converter para centavos
+        var valorReais = Math.round(total * 100) / 100; // Total em reais (ex.: 199.90)
         
         // Pegar o primeiro item do carrinho para o item
         var primeiroItem = cart[0];
         var nomeItem = primeiroItem ? primeiroItem.name : 'Produto';
-        var precoItem = primeiroItem ? Math.round(primeiroItem.price * 100) : valorCentavos;
+        var precoItemReais = primeiroItem ? (Math.round(primeiroItem.price * 100) / 100) : valorReais;
         var quantidadeItem = primeiroItem ? primeiroItem.quantity : 1;
         
         var pixData = {
-            amount: valorCentavos,
+            amount: valorReais,
             description: "Pagamento via Pix - Cacau Show",
             customer: {
                 name: formData.nome,
@@ -1133,7 +1133,7 @@ function gerarPIX(formData, cart, total) {
             },
             item: {
                 title: nomeItem,
-                price: precoItem,
+                price: precoItemReais,
                 quantity: quantidadeItem
             },
             paymentMethod: "PIX"
