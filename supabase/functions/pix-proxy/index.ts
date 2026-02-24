@@ -1,8 +1,10 @@
-// Edge Function do Supabase para fazer proxy das chamadas à API PIX
-// Esta função deve ser criada no Supabase Dashboard em: Edge Functions > Create Function
-// Nome da função: pix-proxy
+// Edge Function do Supabase - Proxy para API InPago (inpagamentos.com)
+// Autenticação: Basic (publicKey:secretKey) conforme documentação InPago
+// Configure no Supabase: Edge Functions > Secrets > INPAG_PUBLIC_KEY e INPAG_SECRET_KEY
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+const INPAG_BASE_URL = 'https://api.inpagamentos.com/v1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,99 +13,150 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 }
 
+function buildBasicAuth(publicKey: string, secretKey: string): string {
+  const credentials = publicKey + ':' + secretKey
+  const encoded = btoa(credentials)
+  return 'Basic ' + encoded
+}
+
+/** Normaliza resposta da InPago para o formato esperado pelo frontend (pixCode, transactionId, status) */
+function normalizeInPagoResponse(body: Record<string, unknown>): Record<string, unknown> {
+  const out = { ...body }
+  // Mapeamentos comuns de nomes de campos (InPago pode usar variações)
+  if (body.pixCode == null && (body.qr_code != null || body.copiaCola != null || body.copia_cola != null)) {
+    out.pixCode = body.qr_code ?? body.copiaCola ?? body.copia_cola
+  }
+  if (body.transactionId == null && (body.id != null || body.transaction_id != null)) {
+    out.transactionId = body.id ?? body.transaction_id
+  }
+  if (body.status != null && typeof body.status === 'string') {
+    const s = (body.status as string).toUpperCase()
+    if (s === 'PAID' || s === 'CONCLUIDO' || s === 'COMPLETED') out.status = 'COMPLETED'
+    else out.status = s
+  }
+  return out
+}
+
 serve(async (req) => {
-  console.log('=== Edge Function pix-proxy chamada ===')
+  console.log('=== Edge Function pix-proxy (InPago) chamada ===')
   console.log('Method:', req.method)
-  console.log('URL:', req.url)
-  console.log('Headers:', Object.fromEntries(req.headers.entries()))
-  
-  // Handle CORS preflight requests
+
   if (req.method === 'OPTIONS') {
-    console.log('Respondendo a requisição OPTIONS (preflight)')
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    })
+    return new Response(null, { status: 200, headers: corsHeaders })
   }
 
   try {
-    console.log('Processando requisição POST')
-    
-    // Verificar se há corpo na requisição
-    let requestData = null
-    try {
-      const text = await req.text()
-      console.log('Body recebido:', text)
-      if (text) {
-        requestData = JSON.parse(text)
-        console.log('Request data parseado:', JSON.stringify(requestData))
-      }
-    } catch (e) {
-      console.error('Erro ao parsear body:', e)
-      // Se não houver corpo ou não for JSON válido, continua
-    }
-
-    if (!requestData || !requestData.endpoint) {
-      console.error('Endpoint não fornecido')
+    const publicKey = Deno.env.get('INPAG_PUBLIC_KEY')
+    const secretKey = Deno.env.get('INPAG_SECRET_KEY')
+    if (!publicKey || !secretKey) {
+      console.error('INPAG_PUBLIC_KEY ou INPAG_SECRET_KEY não configurados nos Secrets da Edge Function')
       return new Response(
-        JSON.stringify({ error: 'Endpoint é obrigatório' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: 'Configuração de chaves InPago ausente. Configure INPAG_PUBLIC_KEY e INPAG_SECRET_KEY nos Secrets.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const { endpoint, method, data } = requestData
-    console.log('Fazendo requisição para:', endpoint)
-    console.log('Method:', method)
-    console.log('Data:', JSON.stringify(data))
+    const auth = buildBasicAuth(publicKey, secretKey)
 
-    // Chave API PIX: Dashboard > Edge Functions > Secrets > PIX_API_KEY
-    const pixApiKey = Deno.env.get('PIX_API_KEY')
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (pixApiKey) {
-      headers['X-Api-Key'] = pixApiKey
-      headers['Authorization'] = 'Bearer ' + pixApiKey
+    let requestData: { endpoint?: string; method?: string; data?: Record<string, unknown>; transactionId?: string } | null = null
+    try {
+      const text = await req.text()
+      if (text) requestData = JSON.parse(text)
+    } catch (e) {
+      console.error('Erro ao parsear body:', e)
     }
 
-    const fetchOptions: RequestInit = {
-      method: method || 'GET',
-      headers,
+    if (!requestData) {
+      return new Response(
+        JSON.stringify({ error: 'Corpo da requisição inválido ou vazio' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    if (data && (method === 'POST' || method === 'PUT')) {
-      fetchOptions.body = JSON.stringify(data)
+    const method = (requestData.method || 'GET').toUpperCase()
+    const data = requestData.data
+
+    // ----- Criar transação PIX (POST)
+    if (method === 'POST' && data && typeof data === 'object' && 'amount' in data) {
+      const url = INPAG_BASE_URL + '/transactions'
+      console.log('InPago: criando transação POST', url)
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': auth,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      const contentType = res.headers.get('content-type')
+      let responseData: Record<string, unknown>
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await res.json()
+      } else {
+        const text = await res.text()
+        responseData = { error: text || 'Resposta não-JSON', raw: text }
+      }
+
+      const normalized = normalizeInPagoResponse(responseData)
+      console.log('InPago create - Status:', res.status, 'Body:', JSON.stringify(normalized))
+
+      return new Response(JSON.stringify(normalized), {
+        status: res.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    const response = await fetch(endpoint, fetchOptions)
-    console.log('Resposta da API Duttyfy - Status:', response.status)
-    
-    let responseData
-    const contentType = response.headers.get('content-type')
-    if (contentType && contentType.includes('application/json')) {
-      responseData = await response.json()
-    } else {
-      responseData = { data: await response.text() }
+    // ----- Consultar status (GET) - transactionId no query do endpoint ou no body
+    let transactionId = requestData.transactionId
+    if (!transactionId && requestData.endpoint) {
+      try {
+        const u = new URL(requestData.endpoint)
+        transactionId = u.searchParams.get('transactionId') || undefined
+      } catch (_) {
+        // ignorar
+      }
     }
-    
-    console.log('Resposta da API Duttyfy:', JSON.stringify(responseData))
+    if (method === 'GET' && transactionId) {
+      const url = INPAG_BASE_URL + '/transactions/' + encodeURIComponent(transactionId)
+      console.log('InPago: consultando status GET', url)
+
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': auth,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const contentType = res.headers.get('content-type')
+      let responseData: Record<string, unknown>
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await res.json()
+      } else {
+        const text = await res.text()
+        responseData = { data: text }
+      }
+
+      const normalized = normalizeInPagoResponse(responseData)
+      console.log('InPago status - Status:', res.status)
+
+      return new Response(JSON.stringify(normalized), {
+        status: res.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     return new Response(
-      JSON.stringify(responseData),
-      { 
-        status: response.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: 'Requisição inválida. Use POST com { data: { amount, paymentMethod, ... } } para criar PIX ou GET com transactionId para consultar status.' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Erro na Edge Function:', error)
+    console.error('Erro na Edge Function pix-proxy:', error)
     return new Response(
-      JSON.stringify({ error: error.message || 'Erro interno do servidor' }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: (error as Error).message || 'Erro interno do servidor' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })

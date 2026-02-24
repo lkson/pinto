@@ -836,38 +836,41 @@ var SUPABASE_BASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 // Chave anon para chamar Edge Functions (get-credentials). Copie de: Dashboard > Settings > API > anon public
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
 
-// Se der 401 "Chave API inválida" na smooth-endpoint: cole aqui a chave anon (Dashboard > Settings > API)
+// Chave anon para chamar a Edge Function PIX (Dashboard > Settings > API). Obrigatória para InPago.
 var SUPABASE_ANON_KEY_OVERRIDE = '';
 
-// Credenciais fixas (não depende de get-credentials; evita 405/400)
+// Credenciais fixas - PIX via proxy Supabase (InPago)
 var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 var SUPABASE_KEY = SUPABASE_ANON_KEY;
-var DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw';
+// Nome da Edge Function que faz proxy InPago. Use 'pix-proxy' (novo) ou 'smooth-endpoint' (se ainda for o nome no Supabase).
+var PIX_FUNCTION_NAME = 'pix-proxy';
 
-// Carrega credenciais (já inicializadas acima; resolve na hora para não travar)
+// Carrega credenciais (pix-proxy = InPago)
 function carregarCredenciais() {
     return Promise.resolve({
         supabaseUrl: SUPABASE_URL,
         supabaseAnonKey: SUPABASE_KEY,
-        pixApiUrl: DUTTYFY_PIX_URL_ENCRIPTADA
+        pixApiUrl: SUPABASE_URL && PIX_FUNCTION_NAME ? SUPABASE_URL + '/functions/v1/' + PIX_FUNCTION_NAME : ''
     });
 }
 
 // Carregar credenciais ao carregar a página
 carregarCredenciais();
 
-// Chama a API PIX: só usa Supabase se você colou a chave em SUPABASE_ANON_KEY_OVERRIDE; senão usa proxy (evita 401)
-function chamarAPIViaSupabase(endpoint, method, data) {
+// Chama a API PIX via proxy Supabase (InPago). Requer SUPABASE_ANON_KEY_OVERRIDE para autenticar na Edge Function.
+function chamarAPIViaSupabase(endpoint, method, data, transactionId) {
     if (!SUPABASE_ANON_KEY_OVERRIDE) {
-        console.log('Usando proxy direto para a API PIX (sem 401)');
-        return chamarAPIViaProxyPublico(endpoint, method, data);
+        console.warn('PIX InPago requer Supabase: configure SUPABASE_ANON_KEY_OVERRIDE para usar o pix-proxy.');
+        return Promise.reject(new Error('Configure a chave do Supabase (SUPABASE_ANON_KEY_OVERRIDE) para gerar PIX via InPago.'));
     }
     if (!SUPABASE_URL) {
         return Promise.reject(new Error('Credenciais não carregadas.'));
     }
     
-    var url = SUPABASE_URL + '/functions/v1/pix-proxy';
-    var body = JSON.stringify({ endpoint: endpoint, method: method, data: data });
+    var url = SUPABASE_URL + '/functions/v1/' + PIX_FUNCTION_NAME;
+    var bodyObj = { endpoint: endpoint || '', method: method, data: data };
+    if (transactionId) bodyObj.transactionId = transactionId;
+    var body = JSON.stringify(bodyObj);
     
     console.log('Chamando Supabase Edge Function:', url);
     return fetch(url, {
@@ -882,13 +885,11 @@ function chamarAPIViaSupabase(endpoint, method, data) {
     .then(function(response) {
         if (response.ok) return response;
         return response.text().then(function(text) {
-            console.warn('Supabase retornou ' + response.status + ', usando proxy');
-            return chamarAPIViaProxyPublico(endpoint, method, data);
+            throw new Error('Proxy retornou ' + response.status + '. Verifique os Secrets (INPAG_PUBLIC_KEY, INPAG_SECRET_KEY) no Supabase.');
         });
     })
     .catch(function(error) {
-        console.warn('Erro ao chamar Supabase, usando proxy:', error.message);
-        return chamarAPIViaProxyPublico(endpoint, method, data);
+        return Promise.reject(error);
     });
 }
 
@@ -1038,26 +1039,18 @@ function gerarPIX(formData, cart, total) {
                 price: precoItemReais,
                 quantity: quantidadeItem
             },
-            paymentMethod: "PIX"
-            // utm é opcional conforme documentação, pode ser adicionado se necessário
+            paymentMethod: 'pix'
+            // utm é opcional conforme documentação InPago
             // utm: "utm_source=site&utm_medium=checkout"
         };
         
-        // Usar a URL encriptada carregada dinamicamente
-        if (!DUTTYFY_PIX_URL_ENCRIPTADA) {
-            throw new Error('Credenciais não carregadas. Por favor, recarregue a página.');
-        }
-        var apiUrl = DUTTYFY_PIX_URL_ENCRIPTADA;
-    
-        // Aguardar credenciais e chamar API através do Supabase
-        // Garantir que as credenciais estão carregadas antes de fazer a chamada
+        // Chamar API PIX via proxy Supabase (InPago) - endpoint vazio; o proxy usa api.inpagamentos.com
         carregarCredenciais().then(function() {
-            if (!DUTTYFY_PIX_URL_ENCRIPTADA) {
-                throw new Error('Credenciais não carregadas. Por favor, recarregue a página.');
+            if (!SUPABASE_URL) {
+                throw new Error('Credenciais não carregadas. Configure SUPABASE_URL.');
             }
-            
-            console.log('Chamando API PIX via Supabase...');
-            return chamarAPIViaSupabase(apiUrl, 'POST', pixData);
+            console.log('Chamando API PIX via Supabase (InPago)...');
+            return chamarAPIViaSupabase('', 'POST', pixData);
         })
         .then(function(response) {
             console.log('Resposta recebida:', response);

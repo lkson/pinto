@@ -1,12 +1,9 @@
 // Edge Function do Supabase para retornar credenciais de forma segura
-// Esta função deve ser criada no Supabase Dashboard em: Edge Functions > Create Function
 // Nome da função: get-credentials
-// 
-// IMPORTANTE: Configure os secrets no Supabase Dashboard:
-// Settings > Edge Functions > Secrets
-// - PIX_API_URL_ENCRIPTADA: URL encriptada da API PIX
-// - SUPABASE_URL: URL do projeto Supabase (opcional, pode ser público)
-// - SUPABASE_ANON_KEY: Chave anon do Supabase (pode ser pública)
+//
+// PIX: o fluxo usa a Edge Function pix-proxy com API InPago (api.inpagamentos.com).
+// Configure em Edge Functions > Secrets: INPAG_PUBLIC_KEY, INPAG_SECRET_KEY.
+// Opcional aqui: PIX_API_URL_ENCRIPTADA (legado), SUPABASE_URL, SUPABASE_ANON_KEY.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -40,13 +37,12 @@ serve(async (req) => {
   }
 
   try {
-    // Buscar credenciais dos secrets do Supabase
-    // Esses valores devem ser configurados no Dashboard do Supabase
-    const pixApiUrl = Deno.env.get('PIX_API_URL_ENCRIPTADA') || 
-                      'https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw'
-    
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 
                         'https://xudfilvyvydckranlipn.supabase.co'
+    
+    // PIX é feito via pix-proxy (InPago). pixApiUrl aponta para o proxy.
+    const pixApiUrl = Deno.env.get('PIX_API_URL_ENCRIPTADA') || 
+                      (supabaseUrl + '/functions/v1/pix-proxy')
     
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || 
                             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4'
