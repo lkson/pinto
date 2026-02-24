@@ -490,10 +490,10 @@ function carregarCredenciais() {
 // Carregar credenciais ao carregar a página
 carregarCredenciais();
 
-// Chama a API PIX via proxy Supabase (InPago). Requer SUPABASE_ANON_KEY_OVERRIDE.
+// Chama a API PIX via proxy Supabase (InPago). Usa SUPABASE_ANON_KEY_OVERRIDE ou SUPABASE_ANON_KEY.
 function chamarAPIViaSupabase(endpoint, method, data, transactionId) {
-    if (!SUPABASE_ANON_KEY_OVERRIDE) {
-        console.warn('PIX InPago requer Supabase: configure SUPABASE_ANON_KEY_OVERRIDE.');
+    var anonKey = SUPABASE_ANON_KEY_OVERRIDE || SUPABASE_ANON_KEY;
+    if (!anonKey) {
         return Promise.reject(new Error('Configure a chave do Supabase para consultar status do PIX.'));
     }
     if (!SUPABASE_URL) {
@@ -509,8 +509,8 @@ function chamarAPIViaSupabase(endpoint, method, data, transactionId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY_OVERRIDE,
-            'apikey': SUPABASE_ANON_KEY_OVERRIDE
+            'Authorization': 'Bearer ' + anonKey,
+            'apikey': anonKey
         },
         body: body
     })
