@@ -1064,7 +1064,9 @@ function gerarPIX(formData, cart, total) {
             if (response instanceof Response) {
                 if (!response.ok) {
                     return response.json().then(function(err) {
-                        throw new Error(err.error || 'Erro na requisição: ' + response.status);
+                        var msg = err && err.error;
+                        if (typeof msg !== 'string') msg = (msg && msg.message) ? msg.message : ('Erro na requisição: ' + response.status);
+                        throw new Error(msg);
                     });
                 }
                 return response.json();
@@ -1082,7 +1084,9 @@ function gerarPIX(formData, cart, total) {
             btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
             
             if (data.error) {
-                alert('Erro ao gerar PIX: ' + data.error);
+                var errStr = data.error;
+                if (typeof errStr !== 'string') errStr = (data.error && data.error.message) ? data.error.message : JSON.stringify(data.error);
+                alert('Erro ao gerar PIX: ' + errStr);
                 return;
             }
             
@@ -1115,10 +1119,11 @@ function gerarPIX(formData, cart, total) {
             btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
             console.error('Erro ao gerar PIX:', error);
             
-            // Mensagem de erro mais específica
+            // Mensagem de erro mais específica (error.message pode ser string ou não)
             var errorMsg = 'Erro ao gerar PIX. ';
-            if (error.message) {
-                errorMsg += error.message;
+            var msg = error && error.message;
+            if (typeof msg === 'string' && msg.length) {
+                errorMsg += msg;
             } else {
                 errorMsg += 'Por favor, verifique se a Supabase Edge Function está configurada corretamente.';
             }
