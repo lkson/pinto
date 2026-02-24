@@ -833,8 +833,10 @@ function validarCPF(cpf) {
 // Configuração do Supabase - Credenciais serão carregadas dinamicamente
 // URL base do Supabase (pode ser pública)
 var SUPABASE_BASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
+// Chave anon para chamar Edge Functions (get-credentials). Copie de: Dashboard > Settings > API > anon public
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
 
-// Se der 401 "Chave API inválida": Supabase Dashboard > Settings > API > Project API keys > anon public (copie e cole abaixo)
+// Se der 401 "Chave API inválida" na smooth-endpoint: cole aqui a chave anon (Dashboard > Settings > API)
 var SUPABASE_ANON_KEY_OVERRIDE = '';
 
 // Variáveis globais para credenciais (serão carregadas da Edge Function)
@@ -861,11 +863,13 @@ function carregarCredenciais() {
             }
         }
         
-        // Buscar credenciais da Edge Function do Supabase
+        // Buscar credenciais da Edge Function do Supabase (Supabase exige apikey/Authorization)
         fetch(SUPABASE_BASE_URL + '/functions/v1/get-credentials', {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
             }
         })
         .then(function(response) {
@@ -891,7 +895,7 @@ function carregarCredenciais() {
             console.error('Erro ao carregar credenciais:', error);
             // Fallback para valores padrão caso a função não esteja disponível
             SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
-            SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
+            SUPABASE_KEY = SUPABASE_ANON_KEY;
             DUTTYFY_PIX_URL_ENCRIPTADA = 'https://www.pagamentos-seguros.app/api-pix/nIrv0PpV1RWaWsPlDqQfHkFrNNNc_RKCtUkq4wJ48zSmA_1mB9AVZhlk_TK-ddWBDcZj8czUJPk661W0zgn3iw';
             console.warn('Usando credenciais de fallback');
             resolve({
