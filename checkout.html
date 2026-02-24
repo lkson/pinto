@@ -885,7 +885,12 @@ function chamarAPIViaSupabase(endpoint, method, data, transactionId) {
     .then(function(response) {
         if (response.ok) return response;
         return response.text().then(function(text) {
-            throw new Error('Proxy retornou ' + response.status + '. Verifique os Secrets (INPAG_PUBLIC_KEY, INPAG_SECRET_KEY) no Supabase.');
+            var msg = 'Proxy retornou ' + response.status + '.';
+            try {
+                var errJson = JSON.parse(text);
+                if (errJson && errJson.error) msg = errJson.error;
+            } catch (_) {}
+            throw new Error(msg);
         });
     })
     .catch(function(error) {

@@ -74,7 +74,11 @@ serve(async (req) => {
     }
 
     const method = (requestData.method || 'GET').toUpperCase()
-    const data = requestData.data
+    // Aceitar payload em requestData.data ou no root (ex.: { amount, paymentMethod, ... })
+    let data = requestData.data
+    if (method === 'POST' && !data && typeof requestData === 'object' && 'amount' in requestData) {
+      data = requestData as Record<string, unknown>
+    }
 
     // ----- Criar transação PIX (POST)
     if (method === 'POST' && data && typeof data === 'object' && 'amount' in data) {
