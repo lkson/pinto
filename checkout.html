@@ -1038,7 +1038,7 @@ function gerarPIX(formData, cart, total) {
             description: "Pagamento via Pix - Cacau Show",
             customer: {
                 name: formData.nome,
-                document: cpfLimpo,
+                document: { type: 'cpf', number: cpfLimpo },
                 email: formData.email,
                 phone: telefoneLimpo
             },
@@ -1048,16 +1048,21 @@ function gerarPIX(formData, cart, total) {
                 quantity: quantidadeItem
             },
             paymentMethod: 'pix'
-            // utm é opcional conforme documentação InPago
-            // utm: "utm_source=site&utm_medium=checkout"
         };
         
         // Chamar API PIX via proxy Supabase (InPago) - endpoint vazio; o proxy usa api.inpagamentos.com
+        if (typeof pixData.amount !== 'number' || Number.isNaN(pixData.amount)) {
+            btnFinalizar.disabled = false;
+            btnFinalizar.innerHTML = '<i class="fa fa-check"></i> Finalizar Compra';
+            pixRequestInProgress = false;
+            alert('Erro: valor do pedido inválido. Recarregue a página e tente novamente.');
+            return;
+        }
         carregarCredenciais().then(function() {
             if (!SUPABASE_URL) {
                 throw new Error('Credenciais não carregadas. Configure SUPABASE_URL.');
             }
-            console.log('Chamando API PIX via Supabase (InPago)...');
+            console.log('Chamando API PIX via Supabase (InPago)...', 'amount:', pixData.amount);
             return chamarAPIViaSupabase('', 'POST', pixData);
         })
         .then(function(response) {

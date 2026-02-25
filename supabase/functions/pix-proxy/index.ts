@@ -19,20 +19,31 @@ function buildBasicAuth(publicKey: string, secretKey: string): string {
   return 'Basic ' + encoded
 }
 
-/** Normaliza resposta da InPago para o formato esperado pelo frontend (pixCode, transactionId, status) */
+/** Extrai o objeto transação (resposta InPago pode vir em body ou body.data) */
+function getTransactionPayload(body: Record<string, unknown>): Record<string, unknown> {
+  const data = body.data && typeof body.data === 'object' ? (body.data as Record<string, unknown>) : body
+  return { ...data }
+}
+
+/** Normaliza resposta da InPago para o formato do frontend (pixCode, transactionId, status) */
 function normalizeInPagoResponse(body: Record<string, unknown>): Record<string, unknown> {
-  const out = { ...body }
-  // Mapeamentos comuns de nomes de campos (InPago pode usar variações)
-  if (body.pixCode == null && (body.qr_code != null || body.copiaCola != null || body.copia_cola != null)) {
-    out.pixCode = body.qr_code ?? body.copiaCola ?? body.copia_cola
+  const data = getTransactionPayload(body)
+  const out = { ...data }
+  const pix = data.pix && typeof data.pix === 'object' ? (data.pix as Record<string, unknown>) : null
+  // pixCode: InPago usa data.pix.qrcode
+  if (out.pixCode == null) {
+    out.pixCode = pix?.qrcode ?? data.qr_code ?? data.copiaCola ?? data.copia_cola
   }
-  if (body.transactionId == null && (body.id != null || body.transaction_id != null)) {
-    out.transactionId = body.id ?? body.transaction_id
+  // transactionId: InPago usa id (número) ou secureId (string)
+  if (out.transactionId == null) {
+    const id = data.id ?? data.secureId ?? data.transaction_id
+    out.transactionId = id != null ? String(id) : undefined
   }
-  if (body.status != null && typeof body.status === 'string') {
-    const s = (body.status as string).toUpperCase()
-    if (s === 'PAID' || s === 'CONCLUIDO' || s === 'COMPLETED') out.status = 'COMPLETED'
-    else out.status = s
+  // status: normalizar "paid" -> "COMPLETED" para o frontend
+  if (data.status != null && typeof data.status === 'string') {
+    const s = (data.status as string).toLowerCase()
+    if (s === 'paid' || s === 'concluido' || s === 'completed' || s === 'pago') out.status = 'COMPLETED'
+    else out.status = (data.status as string).toUpperCase()
   }
   return out
 }
@@ -59,16 +70,17 @@ serve(async (req) => {
     const auth = buildBasicAuth(publicKey, secretKey)
 
     let requestData: { endpoint?: string; method?: string; data?: Record<string, unknown>; transactionId?: string } | null = null
+    const rawBody = await req.text()
+    console.log('Body recebido - tamanho:', rawBody?.length ?? 0)
     try {
-      const text = await req.text()
-      if (text) requestData = JSON.parse(text)
+      if (rawBody && rawBody.trim()) requestData = JSON.parse(rawBody)
     } catch (e) {
       console.error('Erro ao parsear body:', e)
     }
 
     if (!requestData) {
       return new Response(
-        JSON.stringify({ error: 'Corpo da requisição inválido ou vazio' }),
+        JSON.stringify({ error: 'Corpo da requisição inválido ou vazio. Envie JSON com { method: "POST", data: { amount, paymentMethod: "pix", ... } }' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -83,7 +95,63 @@ serve(async (req) => {
     // ----- Criar transação PIX (POST)
     if (method === 'POST' && data && typeof data === 'object' && 'amount' in data) {
       const url = INPAG_BASE_URL + '/transactions'
-      console.log('InPago: criando transação POST', url)
+      // Montar payload no formato InPago: amount número, customer.document objeto, items array
+      const numAmount = Number(data.amount)
+      const amountCentavos = Number.isNaN(numAmount) ? 0 : Math.round(numAmount * 100)
+
+      const customer = data.customer && typeof data.customer === 'object' ? (data.customer as Record<string, unknown>) : {}
+      const doc = customer.document
+      const customerInPago = { ...customer }
+      if (doc !== undefined && doc !== null) {
+        if (typeof doc === 'string') {
+          customerInPago.document = { type: 'cpf', number: String(doc).replace(/\D/g, '') }
+        } else if (typeof doc === 'object' && doc !== null && 'number' in (doc as Record<string, unknown>)) {
+          customerInPago.document = doc
+        } else {
+          const num = (doc as Record<string, unknown>)?.number ?? doc
+          customerInPago.document = { type: 'cpf', number: String(num).replace(/\D/g, '') }
+        }
+      }
+
+      let items: Record<string, unknown>[] = []
+      if (Array.isArray(data.items)) {
+        items = data.items.map((it: unknown) => {
+          const i = it && typeof it === 'object' ? (it as Record<string, unknown>) : {}
+          const price = Number(i.price ?? i.unitPrice)
+          return {
+            title: i.title ?? 'Produto',
+            quantity: typeof i.quantity === 'number' ? i.quantity : 1,
+            tangible: true,
+            unitPrice: Number.isNaN(price) ? 0 : Math.round(price * 100),
+            externalRef: i.externalRef ?? `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          }
+        })
+      }
+      const singleItem = data.item && typeof data.item === 'object' ? (data.item as Record<string, unknown>) : null
+      if (items.length === 0 && singleItem) {
+        const price = Number(singleItem.price ?? singleItem.unitPrice)
+        items = [{
+          title: singleItem.title ?? 'Produto',
+          quantity: typeof singleItem.quantity === 'number' ? singleItem.quantity : 1,
+          tangible: true,
+          unitPrice: Number.isNaN(price) ? amountCentavos : Math.round(price * 100),
+          externalRef: singleItem.externalRef ?? `item-${Date.now()}`,
+        }]
+      }
+
+      const payloadInPago: Record<string, unknown> = {
+        amount: amountCentavos,
+        currency: data.currency ?? 'BRL',
+        paymentMethod: data.paymentMethod ?? 'pix',
+        externalRef: data.externalRef ?? `order-${Date.now()}`,
+        customer: customerInPago,
+        items,
+      }
+      if (data.description != null) payloadInPago.description = data.description
+      if (data.metadata != null) payloadInPago.metadata = data.metadata
+      if (data.postbackUrl != null) payloadInPago.postbackUrl = data.postbackUrl
+
+      console.log('InPago: criando transação POST', url, 'amount:', payloadInPago.amount, 'items:', items.length)
 
       const res = await fetch(url, {
         method: 'POST',
@@ -91,7 +159,7 @@ serve(async (req) => {
           'Authorization': auth,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payloadInPago),
       })
 
       const contentType = res.headers.get('content-type')
@@ -101,6 +169,12 @@ serve(async (req) => {
       } else {
         const text = await res.text()
         responseData = { error: text || 'Resposta não-JSON', raw: text }
+      }
+      // Garantir mensagem de erro legível quando InPago retorna 4xx/5xx
+      if (!res.ok && !responseData.error) {
+        responseData.error = (responseData as { message?: string }).message
+          ?? (responseData.errors && Array.isArray(responseData.errors) && (responseData.errors[0] as string))
+          ?? 'Erro ' + res.status + ' da API InPago'
       }
 
       const normalized = normalizeInPagoResponse(responseData)

@@ -40,7 +40,24 @@ Ou crie/deploy pelo Dashboard: **Edge Functions** → **Create Function** / **De
 
 - **Método**: Basic Access Authentication.
 - **Header**: `Authorization: Basic base64(publicKey + ':' + secretKey)`.
-- **Criação de transação**: `POST https://api.inpagamentos.com/v1/transactions` com JSON (amount, paymentMethod: 'pix', customer, item, etc.).
+- **Criação de transação**: `POST https://api.inpagamentos.com/v1/transactions` com JSON (amount em **centavos**, paymentMethod: 'pix', customer, item, etc.). O proxy converte o valor em reais do frontend para centavos.
 - **Consulta de status**: `GET https://api.inpagamentos.com/v1/transactions/:id`.
 
 O `pix-proxy` faz essas chamadas usando os secrets **INPAG_PUBLIC_KEY** e **INPAG_SECRET_KEY**.
+
+## 5. Postback (webhook) InPago
+
+Para receber notificações quando o PIX for pago:
+
+1. Crie e faça deploy da função **inpag-webhook**:
+   ```bash
+   supabase functions deploy inpag-webhook
+   ```
+2. No Supabase: **Edge Functions** → **inpag-webhook** → **Settings** → desative **Verify JWT** (a InPago não envia JWT).
+3. Na InPago, configure a URL de postback:
+   ```
+   https://SEU_PROJETO.supabase.co/functions/v1/inpag-webhook
+   ```
+   (Substitua `SEU_PROJETO` pelo ref do projeto, ex.: `xudfilvyvydckranlipn`.)
+
+O webhook recebe o payload com `type: "transaction"` e `data` (id, status, paidAt, pix.qrcode, etc.) e responde 200 para a InPago. Os eventos são logados nos Logs da função; você pode estender o código para salvar em tabela Supabase se quiser.

@@ -653,7 +653,8 @@ function verificarStatusPIX() {
             }
             
             var statusDiv = document.getElementById('pix-status');
-            if (data.status === 'COMPLETED') {
+            var statusOk = (data.status === 'COMPLETED' || data.status === 'paid' || (data.status && String(data.status).toLowerCase() === 'paid'));
+            if (statusOk) {
                 statusDiv.className = 'pix-status completed';
                 statusDiv.innerHTML = '<i class="fa fa-check-circle"></i> Pagamento confirmado!';
                 clearInterval(window.pixStatusInterval);
