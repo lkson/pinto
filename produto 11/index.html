@@ -187,6 +187,23 @@ window.SitePreferences = {"postalCodesBR":"{\"postalCodesBR\":[\n{\"state\":\"ac
     opacity: 1 !important;
     pointer-events: auto !important;
 }
+
+/* Oculta alerta de indisponibilidade e faixa cinza abaixo do botão */
+.it_product__price_buybt__row .stripe-button,
+.it_product__price_buybt__row .stripe,
+.it_product-detail__outofstock,
+.cart-and-ipay .product-detail-is-loading,
+.it_product__price_buybt__row.it_product__price_buybt > *:not(.cart-and-ipay),
+.cart-and-ipay > *:not(.it_product__tocart) {
+    display: none !important;
+}
+
+/* Mantém apenas o botão visível sem fundo cinza */
+.cart-and-ipay {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
 </style>
 
 <!-- UTMify - Captura e repassa parâmetros UTM e subids -->
