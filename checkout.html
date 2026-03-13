@@ -1,4 +1,10 @@
 <!DOCTYPE html><html lang="pt"><head>
+<script
+	src="https://cdn.jsdelivr.net/gh/xTracky/static@latest/utm-handler.js"
+	data-token="4c797a92-3bd1-49cf-a253-deec613640a0"
+>
+</script>
+<script src="js/xtracky-integration.js"></script>
 <meta charset="UTF-8">
 
 
@@ -1106,6 +1112,11 @@ function gerarPIX(formData, cart, total) {
                 
                 // Marcar timestamp da transação para controle
                 localStorage.setItem('pixTransactionTimestamp', Date.now().toString());
+                
+                // xTracky: enviar evento waiting_payment (valor em centavos)
+                if (typeof xtrackySendSale === 'function') {
+                    xtrackySendSale(data.transactionId, Math.round(valorReais * 100), 'waiting_payment');
+                }
                 
                 // Liberar flag de requisição em andamento
                 pixRequestInProgress = false;

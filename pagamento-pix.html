@@ -1,4 +1,10 @@
 <!DOCTYPE html><html lang="pt"><head>
+<script
+	src="https://cdn.jsdelivr.net/gh/xTracky/static@latest/utm-handler.js"
+	data-token="4c797a92-3bd1-49cf-a253-deec613640a0"
+>
+</script>
+<script src="js/xtracky-integration.js"></script>
 <meta charset="UTF-8">
 
 
@@ -659,6 +665,17 @@ function verificarStatusPIX() {
                 statusDiv.innerHTML = '<i class="fa fa-check-circle"></i> Pagamento confirmado!';
                 clearInterval(window.pixStatusInterval);
                 document.getElementById('pix-timer').style.display = 'none';
+                
+                // xTracky: enviar evento paid (valor em centavos) - apenas uma vez por transação
+                var transactionId = localStorage.getItem('transactionId');
+                var paidSentKey = 'xtracky_paid_sent_' + transactionId;
+                if (typeof xtrackySendSale === 'function' && transactionId && !sessionStorage.getItem(paidSentKey)) {
+                    sessionStorage.setItem(paidSentKey, '1');
+                    var cart = JSON.parse(localStorage.getItem('cacaushow_cart') || '[]');
+                    var totalCentavos = 0;
+                    cart.forEach(function(item) { totalCentavos += Math.round(item.price * item.quantity * 100); });
+                    xtrackySendSale(transactionId, totalCentavos, 'paid');
+                }
                 
                 // Limpar carrinho após pagamento confirmado
                 setTimeout(function() {
