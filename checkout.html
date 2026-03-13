@@ -842,16 +842,16 @@ var SUPABASE_BASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 // Chave anon para chamar Edge Functions (get-credentials). Copie de: Dashboard > Settings > API > anon public
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1ZGZpbHZ5dnlkY2tyYW5saXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODY4MDAsImV4cCI6MjA4NjE2MjgwMH0.jDevQSnfm25VYoT3jAIjKRLaxJDlQboGT_rNJoPT9v4';
 
-// Chave anon para chamar a Edge Function PIX (Dashboard > Settings > API). Obrigatória para InPago.
+// Chave anon para chamar a Edge Function PIX (Dashboard > Settings > API)
 var SUPABASE_ANON_KEY_OVERRIDE = '';
 
-// Credenciais fixas - PIX via proxy Supabase (InPago)
+// Credenciais fixas - PIX via proxy Supabase (Duttyfy)
 var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 var SUPABASE_KEY = SUPABASE_ANON_KEY;
-// Nome da Edge Function que faz proxy InPago. Use 'pix-proxy' (novo) ou 'smooth-endpoint' (se ainda for o nome no Supabase).
+// Nome da Edge Function que faz proxy Duttyfy (PIX)
 var PIX_FUNCTION_NAME = 'pix-proxy';
 
-// Carrega credenciais (pix-proxy = InPago)
+// Carrega credenciais (pix-proxy = Duttyfy)
 function carregarCredenciais() {
     return Promise.resolve({
         supabaseUrl: SUPABASE_URL,
@@ -1068,7 +1068,7 @@ function gerarPIX(formData, cart, total) {
             if (!SUPABASE_URL) {
                 throw new Error('Credenciais não carregadas. Configure SUPABASE_URL.');
             }
-            console.log('Chamando API PIX via Supabase (InPago)...', 'amount:', pixData.amount);
+            console.log('Chamando API PIX via Supabase (Duttyfy)...', 'amount:', pixData.amount);
             return chamarAPIViaSupabase('', 'POST', pixData);
         })
         .then(function(response) {
@@ -1144,7 +1144,7 @@ function gerarPIX(formData, cart, total) {
             if (typeof msg === 'string' && msg.length && msg !== '[object Object]') {
                 errorMsg += msg;
             } else {
-                errorMsg += 'Verifique os Secrets (INPAG_PUBLIC_KEY, INPAG_SECRET_KEY) no Supabase e o formato do payload.';
+                errorMsg += 'Verifique o Secret DUTTYFY_PIX_URL_ENCRYPTED no Supabase e o formato do payload.';
             }
             alert(errorMsg);
         });

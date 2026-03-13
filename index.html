@@ -449,6 +449,37 @@ src="https://www.facebook.com/tr?id=949372240850083&ev=PageView&noscript=1"
 
 </head><body class="" data-current-store="null"><input type="hidden" class="js-cart-abandonment-settings" data-is-enabled="true">
 
+<!-- Banner Páscoa fixo no topo -->
+<div class="banner-pascoa-fixo">
+    <img src="images/banner-pascoa.png" alt="Páscoa Cacau Show - Ofertas especiais Semana do Consumidor">
+</div>
+<style>
+.banner-pascoa-fixo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    width: 100%;
+    height: 100px;
+    overflow: hidden;
+}
+.banner-pascoa-fixo img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center top;
+}
+@media (min-width: 768px) {
+    .banner-pascoa-fixo { height: 130px; }
+}
+body { padding-top: 100px !important; }
+@media (min-width: 768px) {
+    body { padding-top: 130px !important; }
+}
+</style>
+
 <!-- Pop-up imagem - exibido ao entrar na página -->
 <div class="popup-imagem-overlay" id="popupImagem">
     <div class="popup-imagem-container">

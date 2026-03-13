@@ -40,8 +40,7 @@
       orderId: String(orderId),
       amount: Math.round(Number(amountCentavos)),
       status: status,
-      utm_source: utmSource || '',
-      token: XTRACKY_TOKEN
+      utm_source: utmSource || ''
     };
     fetch(XTRACKY_API_URL, {
       method: 'POST',

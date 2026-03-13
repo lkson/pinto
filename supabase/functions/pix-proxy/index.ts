@@ -1,55 +1,56 @@
-// Edge Function do Supabase - Proxy para API InPago (inpagamentos.com)
-// Autenticação: Basic (publicKey:secretKey) conforme documentação InPago
-// Configure no Supabase: Edge Functions > Secrets > INPAG_PUBLIC_KEY e INPAG_SECRET_KEY
+// Edge Function do Supabase - Proxy para API Duttyfy (PIX)
+// Autenticação: Encrypted URL (a URL é a credencial)
+// Configure no Supabase: Edge Functions > Secrets > DUTTYFY_PIX_URL_ENCRYPTED
+// Painel Duttyfy: Integrations and Keys > API Keys > "Generate Encrypted URL"
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
-const INPAG_BASE_URL = 'https://api.inpagamentos.com/v1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
 }
 
-function buildBasicAuth(publicKey: string, secretKey: string): string {
-  const credentials = publicKey + ':' + secretKey
-  const encoded = btoa(credentials)
-  return 'Basic ' + encoded
+/** Extrai dígitos de document (CPF/CNPJ) */
+function digitsOnly(val: unknown): string {
+  if (val == null) return ''
+  if (typeof val === 'object' && val !== null && 'number' in (val as Record<string, unknown>)) {
+    return String((val as Record<string, unknown>).number || '').replace(/\D/g, '')
+  }
+  return String(val).replace(/\D/g, '')
 }
 
-/** Extrai o objeto transação (resposta InPago pode vir em body ou body.data) */
-function getTransactionPayload(body: Record<string, unknown>): Record<string, unknown> {
-  const data = body.data && typeof body.data === 'object' ? (body.data as Record<string, unknown>) : body
-  return { ...data }
-}
-
-/** Normaliza resposta da InPago para o formato do frontend (pixCode, transactionId, status) */
-function normalizeInPagoResponse(body: Record<string, unknown>): Record<string, unknown> {
-  const data = getTransactionPayload(body)
-  const out = { ...data }
-  const pix = data.pix && typeof data.pix === 'object' ? (data.pix as Record<string, unknown>) : null
-  // pixCode: InPago usa data.pix.qrcode
-  if (out.pixCode == null) {
-    out.pixCode = pix?.qrcode ?? data.qr_code ?? data.copiaCola ?? data.copia_cola
+/** Retry com exponential backoff (1s, 2s, 4s, max 3 tentativas) - apenas para 5xx/timeout */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxAttempts = 3
+): Promise<Response> {
+  let lastError: Error | null = null
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
+      const res = await fetch(url, { ...options, signal: controller.signal })
+      clearTimeout(timeoutId)
+      if (res.status >= 400 && res.status < 500) return res
+      if (res.ok) return res
+      lastError = new Error(`HTTP ${res.status}`)
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e))
+    }
+    if (attempt < maxAttempts - 1) {
+      const delay = Math.pow(2, attempt) * 1000
+      await new Promise((r) => setTimeout(r, delay))
+    }
   }
-  // transactionId: InPago usa id (número) ou secureId (string)
-  if (out.transactionId == null) {
-    const id = data.id ?? data.secureId ?? data.transaction_id
-    out.transactionId = id != null ? String(id) : undefined
-  }
-  // status: normalizar "paid" -> "COMPLETED" para o frontend
-  if (data.status != null && typeof data.status === 'string') {
-    const s = (data.status as string).toLowerCase()
-    if (s === 'paid' || s === 'concluido' || s === 'completed' || s === 'pago') out.status = 'COMPLETED'
-    else out.status = (data.status as string).toUpperCase()
-  }
-  return out
+  throw lastError || new Error('Retry exhausted')
 }
 
 serve(async (req) => {
-  console.log('=== Edge Function pix-proxy (InPago) chamada ===')
+  const urlSuffix = '(last 8)'
+  console.log('=== Edge Function pix-proxy (Duttyfy) chamada ===')
   console.log('Method:', req.method)
 
   if (req.method === 'OPTIONS') {
@@ -57,21 +58,18 @@ serve(async (req) => {
   }
 
   try {
-    const publicKey = Deno.env.get('INPAG_PUBLIC_KEY')
-    const secretKey = Deno.env.get('INPAG_SECRET_KEY')
-    if (!publicKey || !secretKey) {
-      console.error('INPAG_PUBLIC_KEY ou INPAG_SECRET_KEY não configurados nos Secrets da Edge Function')
+    const duttyfyUrl = Deno.env.get('DUTTYFY_PIX_URL_ENCRYPTED')
+    if (!duttyfyUrl || !duttyfyUrl.startsWith('https://')) {
+      console.error('DUTTYFY_PIX_URL_ENCRYPTED não configurado nos Secrets')
       return new Response(
-        JSON.stringify({ error: 'Configuração de chaves InPago ausente. Configure INPAG_PUBLIC_KEY e INPAG_SECRET_KEY nos Secrets.' }),
+        JSON.stringify({ error: 'Configure DUTTYFY_PIX_URL_ENCRYPTED nos Secrets do Supabase.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+    console.log('Duttyfy URL', urlSuffix, duttyfyUrl.slice(-8))
 
-    const auth = buildBasicAuth(publicKey, secretKey)
-
-    let requestData: { endpoint?: string; method?: string; data?: Record<string, unknown>; transactionId?: string } | null = null
+    let requestData: { method?: string; data?: Record<string, unknown>; transactionId?: string } | null = null
     const rawBody = await req.text()
-    console.log('Body recebido - tamanho:', rawBody?.length ?? 0)
     try {
       if (rawBody && rawBody.trim()) requestData = JSON.parse(rawBody)
     } catch (e) {
@@ -80,86 +78,78 @@ serve(async (req) => {
 
     if (!requestData) {
       return new Response(
-        JSON.stringify({ error: 'Corpo da requisição inválido ou vazio. Envie JSON com { method: "POST", data: { amount, paymentMethod: "pix", ... } }' }),
+        JSON.stringify({ error: 'Corpo inválido. Envie JSON com { method, data } ou { transactionId } para GET.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     const method = (requestData.method || 'GET').toUpperCase()
-    // Aceitar payload em requestData.data ou no root (ex.: { amount, paymentMethod, ... })
     let data = requestData.data
     if (method === 'POST' && !data && typeof requestData === 'object' && 'amount' in requestData) {
       data = requestData as Record<string, unknown>
     }
 
-    // ----- Criar transação PIX (POST)
+    // ----- Criar cobrança PIX (POST)
     if (method === 'POST' && data && typeof data === 'object' && 'amount' in data) {
-      const url = INPAG_BASE_URL + '/transactions'
-      // Montar payload no formato InPago: amount número, customer.document objeto, items array
       const numAmount = Number(data.amount)
-      const amountCentavos = Number.isNaN(numAmount) ? 0 : Math.round(numAmount * 100)
+      const amountReais = Number.isNaN(numAmount) ? 0 : numAmount
+      const amountCentavos = Math.round(amountReais * 100)
+      if (amountCentavos < 100) {
+        return new Response(
+          JSON.stringify({ error: 'Valor mínimo é R$ 1,00 (100 centavos)' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
       const customer = data.customer && typeof data.customer === 'object' ? (data.customer as Record<string, unknown>) : {}
-      const doc = customer.document
-      const customerInPago = { ...customer }
-      if (doc !== undefined && doc !== null) {
-        if (typeof doc === 'string') {
-          customerInPago.document = { type: 'cpf', number: String(doc).replace(/\D/g, '') }
-        } else if (typeof doc === 'object' && doc !== null && 'number' in (doc as Record<string, unknown>)) {
-          customerInPago.document = doc
-        } else {
-          const num = (doc as Record<string, unknown>)?.number ?? doc
-          customerInPago.document = { type: 'cpf', number: String(num).replace(/\D/g, '') }
-        }
+      const doc = digitsOnly(customer.document)
+      const phone = digitsOnly(customer.phone)
+      if (doc.length !== 11 && doc.length !== 14) {
+        return new Response(
+          JSON.stringify({ error: 'CPF/CNPJ inválido. Deve ter 11 ou 14 dígitos.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      if (phone.length < 10 || phone.length > 11) {
+        return new Response(
+          JSON.stringify({ error: 'Telefone inválido. Deve ter 10 ou 11 dígitos com DDD.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
 
-      let items: Record<string, unknown>[] = []
-      if (Array.isArray(data.items)) {
-        items = data.items.map((it: unknown) => {
-          const i = it && typeof it === 'object' ? (it as Record<string, unknown>) : {}
-          const price = Number(i.price ?? i.unitPrice)
-          return {
-            title: i.title ?? 'Produto',
-            quantity: typeof i.quantity === 'number' ? i.quantity : 1,
-            tangible: true,
-            unitPrice: Number.isNaN(price) ? 0 : Math.round(price * 100),
-            externalRef: i.externalRef ?? `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-          }
-        })
-      }
       const singleItem = data.item && typeof data.item === 'object' ? (data.item as Record<string, unknown>) : null
-      if (items.length === 0 && singleItem) {
-        const price = Number(singleItem.price ?? singleItem.unitPrice)
-        items = [{
-          title: singleItem.title ?? 'Produto',
-          quantity: typeof singleItem.quantity === 'number' ? singleItem.quantity : 1,
-          tangible: true,
-          unitPrice: Number.isNaN(price) ? amountCentavos : Math.round(price * 100),
-          externalRef: singleItem.externalRef ?? `item-${Date.now()}`,
-        }]
-      }
+      const itemPriceReais = singleItem ? Number(singleItem.price ?? singleItem.unitPrice) : amountReais
+      const itemPriceCentavos = Number.isNaN(itemPriceReais) ? amountCentavos : Math.round(itemPriceReais * 100)
+      const itemQty = singleItem && typeof singleItem.quantity === 'number' ? singleItem.quantity : 1
 
-      const payloadInPago: Record<string, unknown> = {
+      const payloadDuttyfy = {
         amount: amountCentavos,
-        currency: data.currency ?? 'BRL',
-        paymentMethod: data.paymentMethod ?? 'pix',
-        externalRef: data.externalRef ?? `order-${Date.now()}`,
-        customer: customerInPago,
-        items,
-      }
-      if (data.description != null) payloadInPago.description = data.description
-      if (data.metadata != null) payloadInPago.metadata = data.metadata
-      if (data.postbackUrl != null) payloadInPago.postbackUrl = data.postbackUrl
-
-      console.log('InPago: criando transação POST', url, 'amount:', payloadInPago.amount, 'items:', items.length)
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': auth,
-          'Content-Type': 'application/json',
+        customer: {
+          name: String(customer.name || '').trim() || 'Cliente',
+          document: doc,
+          email: String(customer.email || '').trim() || 'cliente@example.com',
+          phone: phone,
         },
-        body: JSON.stringify(payloadInPago),
+        item: {
+          title: String(singleItem?.title || 'Produto').trim() || 'Produto',
+          price: Math.max(1, itemPriceCentavos),
+          quantity: Math.max(1, itemQty),
+        },
+        paymentMethod: 'PIX',
+      }
+      if (data.description != null && String(data.description).trim()) {
+        ;(payloadDuttyfy as Record<string, unknown>).description = String(data.description).trim()
+      }
+      if (data.utm != null && String(data.utm).trim()) {
+        ;(payloadDuttyfy as Record<string, unknown>).utm = String(data.utm).trim()
+      }
+
+      console.log('Duttyfy: criando PIX, amount:', amountCentavos, 'cents')
+
+      const res = await fetchWithRetry(duttyfyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadDuttyfy),
       })
 
       const contentType = res.headers.get('content-type')
@@ -170,42 +160,36 @@ serve(async (req) => {
         const text = await res.text()
         responseData = { error: text || 'Resposta não-JSON', raw: text }
       }
-      // Garantir mensagem de erro legível quando InPago retorna 4xx/5xx
-      if (!res.ok && !responseData.error) {
-        responseData.error = (responseData as { message?: string }).message
-          ?? (responseData.errors && Array.isArray(responseData.errors) && (responseData.errors[0] as string))
-          ?? 'Erro ' + res.status + ' da API InPago'
+
+      if (!res.ok) {
+        const errMsg = (responseData.error as string) || (responseData as { message?: string }).message || `Erro ${res.status} Duttyfy`
+        return new Response(
+          JSON.stringify({ error: errMsg }),
+          { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
 
-      const normalized = normalizeInPagoResponse(responseData)
-      console.log('InPago create - Status:', res.status, 'Body:', JSON.stringify(normalized))
-
-      return new Response(JSON.stringify(normalized), {
-        status: res.status,
+      const out = {
+        pixCode: responseData.pixCode,
+        transactionId: responseData.transactionId,
+        status: responseData.status || 'PENDING',
+      }
+      console.log('Duttyfy create OK, transactionId:', out.transactionId)
+      return new Response(JSON.stringify(out), {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // ----- Consultar status (GET) - transactionId no query do endpoint ou no body
+    // ----- Consultar status (GET)
     let transactionId = requestData.transactionId
-    if (!transactionId && requestData.endpoint) {
-      try {
-        const u = new URL(requestData.endpoint)
-        transactionId = u.searchParams.get('transactionId') || undefined
-      } catch (_) {
-        // ignorar
-      }
-    }
     if (method === 'GET' && transactionId) {
-      const url = INPAG_BASE_URL + '/transactions/' + encodeURIComponent(transactionId)
-      console.log('InPago: consultando status GET', url)
+      const statusUrl = duttyfyUrl + (duttyfyUrl.includes('?') ? '&' : '?') + 'transactionId=' + encodeURIComponent(transactionId)
+      console.log('Duttyfy: consultando status GET')
 
-      const res = await fetch(url, {
+      const res = await fetch(statusUrl, {
         method: 'GET',
-        headers: {
-          'Authorization': auth,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       })
 
       const contentType = res.headers.get('content-type')
@@ -214,20 +198,28 @@ serve(async (req) => {
         responseData = await res.json()
       } else {
         const text = await res.text()
-        responseData = { data: text }
+        responseData = { error: text }
       }
 
-      const normalized = normalizeInPagoResponse(responseData)
-      console.log('InPago status - Status:', res.status)
+      if (!res.ok) {
+        return new Response(
+          JSON.stringify(responseData),
+          { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-      return new Response(JSON.stringify(normalized), {
-        status: res.status,
+      const out = {
+        status: responseData.status || 'PENDING',
+        paidAt: responseData.paidAt,
+      }
+      return new Response(JSON.stringify(out), {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     return new Response(
-      JSON.stringify({ error: 'Requisição inválida. Use POST com { data: { amount, paymentMethod, ... } } para criar PIX ou GET com transactionId para consultar status.' }),
+      JSON.stringify({ error: 'Use POST com { data: { amount, customer, item } } para criar PIX ou GET com transactionId para status.' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {

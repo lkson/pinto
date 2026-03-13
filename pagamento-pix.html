@@ -481,22 +481,23 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // Chave anon para chamar a Edge Function PIX (Dashboard > Settings > API).
 var SUPABASE_ANON_KEY_OVERRIDE = '';
 
-// Credenciais fixas - PIX via proxy Supabase (InPago)
+// Credenciais fixas - PIX via proxy Supabase (Duttyfy)
 var SUPABASE_URL = 'https://xudfilvyvydckranlipn.supabase.co';
 var SUPABASE_KEY = SUPABASE_ANON_KEY;
+var PIX_FUNCTION_NAME = 'pix-proxy';
 
 function carregarCredenciais() {
     return Promise.resolve({
         supabaseUrl: SUPABASE_URL,
         supabaseAnonKey: SUPABASE_KEY,
-        pixApiUrl: SUPABASE_URL ? SUPABASE_URL + '/functions/v1/pix-proxy' : ''
+        pixApiUrl: SUPABASE_URL && PIX_FUNCTION_NAME ? SUPABASE_URL + '/functions/v1/' + PIX_FUNCTION_NAME : ''
     });
 }
 
 // Carregar credenciais ao carregar a página
 carregarCredenciais();
 
-// Chama a API PIX via proxy Supabase (InPago). Usa SUPABASE_ANON_KEY_OVERRIDE ou SUPABASE_ANON_KEY.
+// Chama a API PIX via proxy Supabase (Duttyfy). Usa SUPABASE_ANON_KEY_OVERRIDE ou SUPABASE_ANON_KEY.
 function chamarAPIViaSupabase(endpoint, method, data, transactionId) {
     var anonKey = SUPABASE_ANON_KEY_OVERRIDE || SUPABASE_ANON_KEY;
     if (!anonKey) {
@@ -618,7 +619,7 @@ function chamarAPIViaProxyPublico(endpoint, method, data) {
     return tentarProxy(0);
 }
 
-// Função para verificar status do PIX (via proxy InPago)
+// Função para verificar status do PIX (via proxy Duttyfy)
 function verificarStatusPIX() {
     var transactionId = localStorage.getItem('transactionId');
     if (!transactionId) return;
